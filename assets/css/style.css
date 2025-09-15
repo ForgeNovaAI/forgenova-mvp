@@ -1,0 +1,604 @@
+/* ================================
+   ForgeNova AI — Global Stylesheet
+   ================================ */
+
+/* --- Base Reset --- */
+* { box-sizing:border-box; margin:0; padding:0; }
+html,body {
+  margin:0; padding:0;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif;
+  color:#111827; background:#fff;
+}
+a { text-decoration:none; color:inherit; }
+img { max-width:100%; display:block; }
+
+/* --- Layout container --- */
+.container{
+  max-width:1200px;
+  margin:0 auto;
+  padding-left:24px;
+  padding-right:24px;
+}
+@media (max-width:600px){
+  .container{ padding-left:16px; padding-right:16px; }
+}
+
+/* =================
+   Header / Navbar
+   ================= */
+header.site{
+  position:sticky; top:0; z-index:30;
+  background:#fff;
+  border-bottom:1px solid #e5e7eb;
+  margin-bottom:0 !important;
+}
+.container.nav{
+  display:flex; align-items:center; gap:16px;
+  padding:14px 20px;
+}
+.brand{ display:flex; align-items:center; gap:10px; font-weight:700; font-size:1.1rem; color:#111827; }
+.brand img{ height:48px; width:auto; object-fit:contain; }
+
+.navlinks{
+  margin-left:auto;                 /* push links to the right */
+  display:flex; align-items:center; gap:24px;
+}
+.navlinks a{ padding:8px 0; color:#374151; font-weight:500; }
+.navlinks a.btn{ padding:10px 18px; border-radius:12px; background:#f2612b; color:#fff; font-weight:700; }
+.navlinks a.btn:hover{ filter:brightness(1.05); }
+
+/* Mobile toggle hidden on desktop */
+#mobileToggle{ display:none; }
+
+/* Mobile nav behaviour */
+@media (max-width:900px){
+  #mobileToggle{ display:inline-flex; align-items:center; padding:8px 10px; }
+  .navlinks{
+    display:none;
+    position:absolute; right:16px; top:64px;
+    background:#fff; border:1px solid #e5e7eb; border-radius:12px;
+    box-shadow:0 10px 28px rgba(0,0,0,.08);
+    flex-direction:column; gap:10px; padding:12px 14px; z-index:40;
+  }
+  .navlinks[data-open="true"]{ display:flex; }
+}
+
+/* =========
+   Hero
+   ========= */
+.hero{
+  padding-top:32px !important;   /* tightened top spacing */
+  padding-bottom:60px;
+}
+.hero-wrap{
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  align-items:center;
+  gap:40px;
+}
+@media (max-width:960px){ .hero-wrap{ grid-template-columns:1fr; } }
+
+.hero .kicker{ text-transform:uppercase; font-size:.85rem; font-weight:700; color:#f2612b; margin-top:0 !important; }
+.hero h1{ font-size:2.5rem; font-weight:800; margin:12px 0; line-height:1.2; }
+.hero p{ font-size:1.1rem; color:#374151; max-width:560px; }
+.hero .btn{ background:#f2612b; color:#fff; font-weight:700; padding:12px 22px; border-radius:12px; }
+.hero .btn.ghost{ background:transparent; border:1px solid #f2612b; color:#f2612b; }
+
+/* Stats row */
+.grid{ display:grid; gap:16px; }
+.grid.two{ grid-template-columns:1fr 1fr; }
+.grid.three{ grid-template-columns:repeat(3, minmax(0,1fr)); }
+@media (max-width:900px){ .grid.three{ grid-template-columns:1fr 1fr; } }
+@media (max-width:560px){ .grid.two, .grid.three{ grid-template-columns:1fr; } }
+
+.stat{ padding:8px 0; }
+.stat strong{ display:block; font-size:1.25rem; line-height:1.1; }
+.stat span{ display:block; color:#6b7280; font-size:.95rem; }
+
+/* =========
+   Cards & Glass
+   ========= */
+.card,.glass{
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+  padding:18px;
+  box-shadow:0 4px 12px rgba(0,0,0,.04);
+}
+.glass{ background:#fff; }
+
+/* =========
+   Buttons
+   ========= */
+.btn{
+  display:inline-block;
+  background:#f2612b;
+  color:#fff;
+  font-weight:700;
+  padding:12px 20px;
+  border-radius:12px;
+  transition:all .2s;
+}
+.btn:hover{ filter:brightness(1.05); transform:translateY(-1px); }
+.btn.ghost{ background:transparent; border:1px solid #f2612b; color:#f2612b; }
+
+/* =========
+   Footer
+   ========= */
+.footer{
+  background:#f9fafb;
+  padding:24px 20px;
+  border-top:1px solid #e5e7eb;
+}
+.footer .brand{ display:flex; align-items:center; gap:10px; font-weight:700; }
+.footer a{ color:#f2612b; font-weight:500; }
+
+/* ==========================
+   Contact Page — Form Styles
+   ========================== */
+.contact-form{ gap:14px; }
+
+.contact-form .row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+@media (max-width:720px){
+  .contact-form .row{ grid-template-columns:1fr; }
+}
+
+.contact-form label{
+  display:block;
+  font-weight:700;
+  color:#111827;
+  margin:8px 0 6px;
+}
+
+.contact-form input,
+.contact-form select,
+.contact-form textarea{
+  width:100%;
+  padding:12px 14px;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  background:#fff;
+  color:#111827;
+  outline:none;
+  font:inherit;
+}
+
+.contact-form input:focus,
+.contact-form select:focus,
+.contact-form textarea:focus{
+  border-color:#f2612b;
+  box-shadow:0 0 0 3px rgba(242,97,43,.12);
+}
+
+.contact-form textarea#message{
+  min-height:140px;
+  resize:vertical;
+}
+
+.contact-actions{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  margin-top:16px;
+}
+/* --- Solutions Grid --- */
+.grid.two {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 columns on desktop */
+  gap: 24px; /* space between cards */
+  margin-top: 16px;
+}
+
+.card.usecase {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+.card.usecase img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+}
+
+.card.usecase div {
+  padding: 16px;
+}
+
+.card.usecase h3 {
+  margin-bottom: 8px;
+  font-size: 1.25rem;
+  color: #111827;
+}
+
+.card.usecase p {
+  margin-bottom: 12px;
+  color: #374151;
+}
+
+.card.usecase .badge {
+  display: inline-block;
+  background: #ff6600; /* ForgeNova orange */
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* Mobile layout */
+@media (max-width: 768px) {
+  .grid.two {
+    grid-template-columns: 1fr; /* stack into 1 column */
+  }
+}
+/* ==== Solutions cards: show full image, no cropping ==== */
+.card.usecase {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Media wrapper keeps all cards the same shape without cutting the image */
+.card.usecase .media {
+  aspect-ratio: 16 / 9;             /* consistent visual height */
+  background: #f6f8fb;              /* subtle backdrop behind letterboxed images */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card.usecase .media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;               /* show the whole image (no crop) */
+  display: block;
+}
+
+.card.usecase .body {
+  padding: 16px;
+}
+
+.card.usecase h3 {
+  margin: 0 0 8px;
+  font-size: 1.25rem;
+  color: #111827;
+}
+
+.card.usecase p {
+  margin: 0 0 12px;
+  color: #374151;
+}
+
+.card.usecase .badge {
+  display: inline-block;
+  background: #ff6600;
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* Grid (unchanged logic, just here for completeness) */
+.grid.two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 16px;
+}
+@media (max-width: 768px) {
+  .grid.two { grid-template-columns: 1fr; }
+}
+/* ==== Section Spacing Fix ==== */
+.section {
+  padding: 60px 0;   /* adds space top and bottom */
+}
+
+.section .kicker {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  color: #ff6600;
+  font-weight: 600;
+}
+.trust-wrap h2 { margin-bottom: 18px; }
+
+.trust-icons {
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  gap: 48px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.trust-icons .ti {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.trust-icons .ti svg {
+  width: 64px;
+  height: 64px;
+  stroke: #666;           /* greyscale */
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 180ms ease, transform 180ms ease;
+}
+
+.trust-icons .ti p {
+  margin: 0;
+  font-size: .95rem;
+  color: #374151;
+}
+
+.trust-icons .ti:hover svg {
+  stroke: #ff6600;       /* ForgeNova orange on hover */
+  transform: translateY(-2px);
+}
+
+@media (max-width: 700px) {
+  .trust-icons { gap: 28px; }
+  .trust-icons .ti svg { width: 54px; height: 54px; }
+}
+.testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.testimonial-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 22px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+
+.testimonial-img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 14px;
+}
+
+.quote {
+  font-style: italic;
+  color: #374151;
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+.author {
+  margin: 0;
+  font-weight: 600;
+  color: #111827;
+}
+
+.role {
+  display: block;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 900px) {
+  .testimonial-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .testimonial-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* ===== COMPACT SPACING OVERRIDES (site-wide) ===== */
+
+/* Sections & containers */
+.section{ padding:32px 0 !important; }            /* was ~56–80 */
+.container{ padding-left:16px; padding-right:16px; }
+
+/* Grids */
+.grid, .grid.two, .grid.three, .grid-3{
+  gap:16px !important;                             /* tighten gaps between cards */
+}
+
+/* Cards */
+.card, .card-lite{
+  padding:18px !important;                         /* reduce inner padding */
+  border-radius:12px;
+}
+.card img, .card-lite img{ margin:0; display:block; }
+
+/* Headings & text rhythm */
+h1{ margin:0 0 16px; }
+h2{ margin:0 0 14px; }
+h3{ margin:0 0 10px; }
+p{  margin:8px 0 12px; line-height:1.45; }
+
+/* Kicker / small label above headings */
+.kicker{ margin-bottom:6px !important; }
+
+/* Hero metrics / badges etc. */
+.badge, .stat, .metric{ margin:6px 0; }
+
+/* Use-case cards (images) */
+.card.usecase img{
+  aspect-ratio:16/9;
+  object-fit:cover;
+}
+
+/* Footer */
+.footer .container{ padding-top:18px; padding-bottom:18px; }
+
+/* First content section after the sticky header */
+header.site + .section{ margin-top:12px; }         /* avoids “heading touching header” */
+/* === Tighten space under the HERO section === */
+/* If your hero section already has a class (e.g. .hero), use it here instead of the header.site selector */
+header.site + .section {                      /* the first section after the header */
+  padding-bottom: 14px !important;            /* reduce bottom padding */
+}
+
+/* Remove “ghost” spacing created by margins in the hero grid/card */
+header.site + .section .grid,
+header.site + .section .card,
+header.site + .section img {
+  margin-bottom: 0 !important;
+}
+
+/* Ensure the media on the right doesn't force extra height */
+@media (min-width: 900px){
+  header.site + .section .container {
+    align-items: center;                      /* vertically center hero columns */
+  }
+}
+
+/* Pull the next section (HIGHLIGHTS) closer */
+header.site + .section + .section {
+  margin-top: 8px !important;                 /* was likely larger */
+  padding-top: 18px !important;
+}
+
+/* If you have a metrics row (∞ Unlimited apps, etc.), tighten it specifically */
+header.site + .section .metrics,
+header.site + .section .stats,
+header.site + .section .grid.three {
+  margin-top: 8px !important;
+  margin-bottom: 6px !important;
+  gap: 14px !important;
+}
+
+/* Keep the kicker tight */
+.section .kicker { margin-top: 0; margin-bottom: 6px !important; }
+/* HERO section spacing cleanup */
+.section.hero,
+.section[style*="padding-top:44px"] {
+  padding-top: 24px !important;    /* was 44px */
+  padding-bottom: 24px !important; /* add bottom balance */
+}
+
+/* Tighten metric row spacing */
+.section.hero .container > div > div:last-child {
+  margin-top: 12px !important;  /* was 18px inline */
+}
+
+/* Prevent the image/figcaption from forcing extra space */
+.section.hero figure.shot {
+  margin: 0 !important;
+}
+.section.hero figure.shot figcaption {
+  margin-top: 4px !important;
+  padding-bottom: 0 !important;
+}
+/* ===========================
+   GLOBAL RHYTHM & SPACING
+   (paste at end of style.css)
+   =========================== */
+
+/* --- Space scale (tweak here if you want tighter/looser site-wide) --- */
+:root{
+  --space-xxs: 6px;
+  --space-xs: 10px;
+  --space-sm: 14px;
+  --space-md: 20px;
+  --space-lg: 28px;
+  --space-xl: 40px;
+}
+
+/* --- Sections & containers --- */
+.section{
+  padding: var(--space-lg) 0;                   /* vertical rhythm for all sections */
+}
+header.site + .section{
+  padding-top: var(--space-md);                 /* avoid heading touching header */
+}
+.section + .section{
+  margin-top: var(--space-sm);                  /* keep sections close but breathable */
+}
+.container{
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* --- Headings & text rhythm --- */
+h1{ margin: 0 0 var(--space-sm); line-height: 1.15; }
+h2{ margin: 0 0 var(--space-sm); line-height: 1.2; }
+h3{ margin: 0 0 var(--space-xs); }
+p{  margin: var(--space-xxs) 0 var(--space-sm); line-height: 1.5; }
+.kicker{ margin-bottom: var(--space-xs) !important; }
+
+/* --- Grids (generic + your helpers) --- */
+.grid,
+.grid.two,
+.grid.three,
+.grid-3{
+  gap: var(--space-md);
+}
+
+/* --- Cards --- */
+.card, .card-lite{
+  padding: var(--space-md);
+  border-radius: 12px;
+}
+.card img, .card-lite img{ display:block; margin:0; }
+
+/* Use-case cards: consistent media crop */
+.card.usecase img{
+  aspect-ratio: 16/9;
+  object-fit: cover;
+}
+
+/* --- Hero clean-up (if section has class 'hero') --- */
+.section.hero{ padding-top: var(--space-md); padding-bottom: var(--space-md); }
+.section.hero .container{ align-items: center; }
+.section.hero figure.shot{ margin:0; }
+.section.hero figure.shot figcaption{ margin-top: var(--space-xxs); }
+
+/* --- Lists & bullets --- */
+ul, ol{ margin: var(--space-xs) 0 var(--space-sm) var(--space-md); }
+
+/* --- Footer --- */
+.footer .container{
+  padding-top: var(--space-md);
+  padding-bottom: var(--space-md);
+}
+
+/* --- Tighten large screens slightly for elegance --- */
+@media (min-width: 1100px){
+  .section{ padding: 24px 0; }
+  .grid, .grid.two, .grid.three, .grid-3{ gap: 18px; }
+}
+
+/* --- Mobile refinements --- */
+@media (max-width: 700px){
+  .section{ padding: var(--space-md) 0; }
+  h1{ font-size: clamp(28px, 6vw, 38px); }
+  .grid, .grid.two, .grid.three, .grid-3{ gap: var(--space-sm); }
+}
