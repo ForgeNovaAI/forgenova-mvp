@@ -2,6 +2,17 @@
 
 <html lang="en">
 <head>
+    <!-- Supabase SDK -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  const { createClient } = supabase;
+
+  const SUPABASE_URL = "https://icbfadlizwwonymqdclb.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljYmZhZGxpend3b255bXFkY2xiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgwMzU4OTUsImV4cCI6MjA3MzYxMTg5NX0.sQNGjFdC-WM0nSdGucgx3DelUJ5KJXh6S8J54xWUEu0";
+
+  // Create Supabase client
+  const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
 <meta charset="utf-8"/>
 <title>ForgeNova MVP — Strict Layout</title>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
