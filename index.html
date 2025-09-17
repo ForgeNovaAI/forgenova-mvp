@@ -2313,54 +2313,6 @@ async function loadRecords() {
 loadRecords();
 
 </script>
-
-<!-- Output container -->
-<div id="output" style="white-space: pre; font-family: monospace; margin:20px; padding:10px; border:1px solid #ddd;"></div>
-
-<script>
-async function loadRecords() {
-  const output = document.getElementById('output');
-  output.innerText = "Loading records...";
-
-  try {
-    // Get the template id for "Maintenance Log"
-    const { data: template, error: templateError } = await supabaseClient
-      .from('templates')
-      .select('id')
-      .eq('name', 'Maintenance Log')
-      .single();
-
-    if (templateError) {
-      output.innerText = "Error: could not load template.";
-      console.error('Template error:', templateError);
-      return;
-    }
-
-    // Fetch records linked to that template
-    const { data: records, error: recordsError } = await supabaseClient
-      .from('records')
-      .select('data, uploaded_at')
-      .eq('template_id', template.id);
-
-    if (recordsError) {
-      output.innerText = "Error loading records.";
-      console.error('Records error:', recordsError);
-      return;
-    }
-
-    // Render records
-    if (!records || records.length === 0) {
-      output.innerText = "No records found.";
-    } else {
-      output.innerText = JSON.stringify(records, null, 2);
-    }
-  } catch (err) {
-    output.innerText = "Unexpected error.";
-    console.error('Unexpected error:', err);
-  }
-}
-
-loadRecords();
 </script>
 </body>
 </html>
