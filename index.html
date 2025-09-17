@@ -2391,7 +2391,7 @@ if (state.records && state.records.length > 0) {
   });
 
   // 🔥 Sync Supabase data into app state
-  state.state.records = state.records.map(r => r.data);
+  state.records = records.map(r => r.data);
   deriveFiltered();
   renderAll();
 
@@ -2401,7 +2401,7 @@ if (state.records && state.records.length > 0) {
   tableBody.appendChild(tr);
 
   // Reset state if no data
-  state.state.records = [];
+  state.records = [];
   deriveFiltered();
   renderAll();
 }
