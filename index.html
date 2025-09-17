@@ -2372,9 +2372,41 @@ async function loadRecords() {
 state.records = records.map(r => r.data);
 deriveFiltered();
 renderAll();
+// After populating table
+if (records && records.length > 0) {
+  records.forEach((row) => {
+    const record = row.data;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${record.machine_id || ""}</td>
+      <td>${record.date || (row.uploaded_at ? new Date(row.uploaded_at).toLocaleDateString() : "")}</td>
+      <td>${record.shift || ""}</td>
+      <td>${record.downtime_min || ""}</td>
+      <td>${record.reason || ""}</td>
+      <td>${record.notes || ""}</td>
+      <td>—</td>
+    `;
+    tableBody.appendChild(tr);
+  });
+
+  // 🔥 Sync Supabase data into app state
+  state.records = records.map(r => r.data);
+  deriveFiltered();
+  renderAll();
+
+} else {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td colspan="7">No records found.</td>`;
+  tableBody.appendChild(tr);
+
+  // Reset state if no data
+  state.records = [];
+  deriveFiltered();
+  renderAll();
+}
 
 loadRecords();
 </script>
-</script>
+
 </body>
 </html>
