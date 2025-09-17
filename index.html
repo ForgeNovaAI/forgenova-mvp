@@ -5,7 +5,6 @@
     <!-- Supabase SDK -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script>
-<script src="https://unpkg.com/chart.js@4.1.1/dist/chart.umd.min.js"></script>
   const { createClient } = supabase;
 
   const SUPABASE_URL = "https://icbfadlizwwonymqdclb.supabase.co";
@@ -220,7 +219,7 @@ const state = { appName: lastTemplate, fields: [
       {label:'Downtime (min)', key:'downtime_min', type:'number'},
       {label:'Reason',     key:'reason',     type:'select', options:['Electrical','Mechanical','Operator','Planned','Other']},
       {label:'Notes',      key:'notes',      type:'textarea'}
-    ], state.records: [], filtered: [], persist: false };
+    ], records: [], filtered: [], persist: false };
 
     const PERSIST_FLAG_KEY = 'forgenova_mvp_persist_on';
 
@@ -271,10 +270,10 @@ const state = { appName: lastTemplate, fields: [
     function toast(msg, ms=2200){ const t=$('toast'); if(!t) return; t.textContent=msg; t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'), ms); }
 
     function templateStorageKey(appName){ return 'forgenova_mvp_template_'+ slug(appName||state.appName); }
-    function saveLocalForTemplate(){ if(!state.persist) return; const key=templateStorageKey(state.appName); const snap={appName:state.appName, fields:state.fields, state.records:state.state.records, ts:Date.now()}; try{ localStorage.setItem(key, JSON.stringify(snap)); }catch(e){} }
+    function saveLocalForTemplate(){ if(!state.persist) return; const key=templateStorageKey(state.appName); const snap={appName:state.appName, fields:state.fields, records:state.records, ts:Date.now()}; try{ localStorage.setItem(key, JSON.stringify(snap)); }catch(e){} }
     function loadLocalForTemplate(appName){ const key=templateStorageKey(appName); try{ const raw=localStorage.getItem(key); return raw? JSON.parse(raw): null; }catch(e){ return null; } }
     function clearLocalForTemplate(appName){ const key=templateStorageKey(appName||state.appName); try{ localStorage.removeItem(key); }catch(e){} }
-    function restoreTemplateSnapshot(snap){ if(!snap) return false; state.appName=snap.appName||state.appName; state.fields=Array.isArray(snap.fields)?snap.fields:state.fields; state.state.records=Array.isArray(snap.state.records)?snap.state.records:[]; deriveFiltered(); renderAll(); return true; }
+    function restoreTemplateSnapshot(snap){ if(!snap) return false; state.appName=snap.appName||state.appName; state.fields=Array.isArray(snap.fields)?snap.fields:state.fields; state.records=Array.isArray(snap.records)?snap.records:[]; deriveFiltered(); renderAll(); return true; }
 
     const els = {
       templateList: $('templateList'),
@@ -309,12 +308,12 @@ const state = { appName: lastTemplate, fields: [
         div.className = 'template';
         div.innerHTML = `<div><strong>${t.name}</strong><span class="badge">${t.badge}</span></div><div class="muted" style="font-size:13px">${t.desc}</div>`;
         div.onclick = ()=>{
-          const hasRecords = state.state.records.length>0;
+          const hasRecords = state.records.length>0;
           let msg = `Switch to "${t.name}"?`;
           if(state.persist){
             msg += `\n\nRemember is ON: current template will be saved, and ${t.name}'s last data (if any) will be restored.`;
           } else if(hasRecords){
-            msg += `\n\nCurrent state.records will be cleared (no device saving).`;
+            msg += `\n\nCurrent records will be cleared (no device saving).`;
           }
           if(!confirm(msg)) return;
           if(state.persist){ saveLocalForTemplate(); }
@@ -323,9 +322,9 @@ const state = { appName: lastTemplate, fields: [
           let restored=false;
           if(state.persist){
             const snap=loadLocalForTemplate(state.appName);
-            if(snap){ restored = restoreTemplateSnapshot(snap); if(restored) toast(`Restored ${state.state.records.length} rows for ${state.appName}`); }
+            if(snap){ restored = restoreTemplateSnapshot(snap); if(restored) toast(`Restored ${state.records.length} rows for ${state.appName}`); }
           }
-          if(!restored){ state.state.records=[]; deriveFiltered(); renderAll(); rebuildKpis(); rebuildCharts(); rebuildDashboardSummary(); generateInsights(false); }
+          if(!restored){ state.records=[]; deriveFiltered(); renderAll(); rebuildKpis(); rebuildCharts(); rebuildDashboardSummary(); generateInsights(false); }
         };
         els.templateList.appendChild(div);
       });
@@ -366,11 +365,11 @@ const state = { appName: lastTemplate, fields: [
     function deriveFiltered(){
       const q=(els.filterInput?.value||'').trim().toLowerCase(); if(!q){ state.filtered=[]; return; }
       const res=[]; const cols=state.fields.map(f=>f.key);
-      for(const r of state.state.records){ for(const k of cols){ const v=r[k]; if(v!=null && String(v).toLowerCase().includes(q)){ res.push(r); break; } } }
+      for(const r of state.records){ for(const k of cols){ const v=r[k]; if(v!=null && String(v).toLowerCase().includes(q)){ res.push(r); break; } } }
       state.filtered=res;
     }
 
-    function currentRows(){ return (state.filtered.length || (els.filterInput && els.filterInput.value)) ? state.filtered : state.state.records; }
+    function currentRows(){ return (state.filtered.length || (els.filterInput && els.filterInput.value)) ? state.filtered : state.records; }
 
     function renderTable(){
       const cols=[...state.fields.map(f=>({key:f.key,label:f.label})), {key:'_actions',label:'Actions'}];
@@ -381,7 +380,7 @@ const state = { appName: lastTemplate, fields: [
           th.style.cursor='pointer';
           th.onclick=()=>{
             const asc=th.dataset.asc==='true'?false:true; th.dataset.asc=asc;
-            state.state.records.sort((a,b)=> (a[c.key]??'').toString().localeCompare((b[c.key]??'').toString(), undefined,{numeric:true})*(asc?1:-1));
+            state.records.sort((a,b)=> (a[c.key]??'').toString().localeCompare((b[c.key]??'').toString(), undefined,{numeric:true})*(asc?1:-1));
             deriveFiltered(); renderTable(); saveLocalForTemplate();
           };
         }
@@ -399,7 +398,7 @@ const state = { appName: lastTemplate, fields: [
           cols.forEach(c=>{
             const td=document.createElement('td');
             if(c.key==='_actions'){
-              const i=state.state.records.indexOf(rec);
+              const i=state.records.indexOf(rec);
               td.innerHTML = `<button class="btn small" data-edit="${i}">✏️</button> <button class="btn small" data-del="${i}">🗑️</button>`;
             } else {
               let v=rec[c.key]; if(typeof v==='boolean') v = v ? 'Yes':'No';
@@ -411,14 +410,14 @@ const state = { appName: lastTemplate, fields: [
         });
       }
       els.tableBody.querySelectorAll('[data-del]').forEach(btn=>{
-        btn.onclick=()=>{ const i=+btn.dataset.del; state.state.records.splice(i,1); deriveFiltered(); renderAll(); saveLocalForTemplate(); };
+        btn.onclick=()=>{ const i=+btn.dataset.del; state.records.splice(i,1); deriveFiltered(); renderAll(); saveLocalForTemplate(); };
       });
       els.tableBody.querySelectorAll('[data-edit]').forEach(btn=>{
         btn.onclick=()=>{
-          const i=+btn.dataset.edit; fillForm(state.state.records[i]);
+          const i=+btn.dataset.edit; fillForm(state.records[i]);
           els.saveEntry.scrollIntoView({behavior:'smooth', block:'center'});
           const original=els.saveEntry.onclick;
-          els.saveEntry.onclick=(e)=>{ e.preventDefault(); state.state.records[i]=readForm(); deriveFiltered(); renderAll(); clearForm(); els.saveEntry.onclick=original; saveLocalForTemplate(); };
+          els.saveEntry.onclick=(e)=>{ e.preventDefault(); state.records[i]=readForm(); deriveFiltered(); renderAll(); clearForm(); els.saveEntry.onclick=original; saveLocalForTemplate(); };
         };
       });
     }
@@ -456,7 +455,7 @@ const state = { appName: lastTemplate, fields: [
           const rows = Array.isArray(res.data) ? res.data.filter(r => r && Object.keys(r).length) : [];
           const rawHeaders = Array.isArray(res.meta?.fields) && res.meta.fields.length ? res.meta.fields.map(h => (h||'').trim()) : (rows[0] ? Object.keys(rows[0]) : []);
           if(!rows.length || !rawHeaders.length){ statusEl.textContent = "No rows/headers found."; return; }
-          if(mode==='replace'){ state.state.records = []; }
+          if(mode==='replace'){ state.records = []; }
           const headerBySlug = {}; rawHeaders.forEach(h => headerBySlug[slug(h)] = h);
           rawHeaders.forEach(h=>{
             const key = slug(h);
@@ -483,7 +482,7 @@ const state = { appName: lastTemplate, fields: [
               if(f.type==='date'){ const iso=/^\d{4}-\d{2}-\d{2}$/; if(!iso.test(String(v))){ const d=new Date(v); if(!isNaN(d)) { const mm=String(d.getMonth()+1).padStart(2,'0'); const dd=String(d.getDate()).padStart(2,'0'); v=`${d.getFullYear()}-${mm}-${dd}`; } } }
               rec[f.key]=v;
             });
-            state.state.records.push(rec);
+            state.records.push(rec);
           });
           deriveFiltered(); renderAll(); rebuildKpis(); rebuildCharts(); rebuildDashboardSummary(); generateInsights(true); statusEl.textContent = `Imported ${rows.length} rows (${mode})`;
           if(state.persist) saveLocalForTemplate();
@@ -511,10 +510,10 @@ const state = { appName: lastTemplate, fields: [
     $('exportBtn').onclick = exportCsv;
     $('deleteDataBtn').onclick = ()=>{
       if(confirm(`Delete ALL data for "${state.appName}"? This cannot be undone.`)){
-        state.state.records=[]; deriveFiltered(); renderAll(); clearLocalForTemplate(); toast('Deleted data for current template'); $('status').textContent='Template data deleted';
+        state.records=[]; deriveFiltered(); renderAll(); clearLocalForTemplate(); toast('Deleted data for current template'); $('status').textContent='Template data deleted';
       }
     };
-    $('saveEntry').onclick = (e)=>{ e.preventDefault(); state.state.records.push(readForm()); deriveFiltered(); renderAll(); $('entryForm').reset(); if(state.persist) saveLocalForTemplate(); };
+    $('saveEntry').onclick = (e)=>{ e.preventDefault(); state.records.push(readForm()); deriveFiltered(); renderAll(); $('entryForm').reset(); if(state.persist) saveLocalForTemplate(); };
     $('clearForm').onclick = (e)=>{ e.preventDefault(); $('entryForm').reset(); };
     $('scrollToForm').onclick = ()=> $('saveEntry').scrollIntoView({behavior:'smooth', block:'center'});
     $('filterInput').addEventListener('input', ()=>{ deriveFiltered(); renderAll(); });
@@ -527,7 +526,7 @@ const state = { appName: lastTemplate, fields: [
         const snap = loadLocalForTemplate(state.appName);
         if(snap && confirm(`Found saved data for "${state.appName}". Restore it now?`)){
           restoreTemplateSnapshot(snap);
-          toast(`Restored ${state.state.records.length} rows`);
+          toast(`Restored ${state.records.length} rows`);
         }
         saveLocalForTemplate();
         toast('Device persistence ON');
@@ -538,7 +537,7 @@ const state = { appName: lastTemplate, fields: [
       try{ const flag=localStorage.getItem(PERSIST_FLAG_KEY); if(flag==='1'){ state.persist=true; $('persistToggle').checked=true; } }catch(e){}
       renderAll();
       if(state.persist){
-        const snap=loadLocalForTemplate(state.appName); if(snap){ restoreTemplateSnapshot(snap); toast(`Restored ${state.state.records.length} rows for ${state.appName}`); }
+        const snap=loadLocalForTemplate(state.appName); if(snap){ restoreTemplateSnapshot(snap); toast(`Restored ${state.records.length} rows for ${state.appName}`); }
       }
     })();
   
@@ -592,7 +591,7 @@ function generateInsights(showToast){
     const unresolved = recs.filter(r=> String(fval(r,['resolved'])).toLowerCase()!=='true' && String(fval(r,['resolved'])).toLowerCase()!=='yes').length;
     out.push(`Unresolved findings: ${unresolved}`);
   } else {
-    out.push(`Loaded ${recs.length} state.records.`);
+    out.push(`Loaded ${recs.length} records.`);
   }
 
   const ul = document.getElementById('insightsList');
@@ -1393,7 +1392,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const modeSel = document.getElementById('importMode') || (window.els && els.importMode);
       if(modeSel){ modeSel.value = 'replace'; }
       // clear current working set (template switch)
-      if(Array.isArray(state.state.records)){ state.state.records.length = 0; }
+      if(Array.isArray(state.records)){ state.records.length = 0; }
       if (typeof deriveFiltered === 'function') try { deriveFiltered(); } catch(e){}
       if (typeof renderAll === 'function') try { renderAll(); } catch(e){}
     } catch(e){}
@@ -1433,7 +1432,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     try { if (window.chartA && chartA.destroy) chartA.destroy(); } catch(e){}
     try { if (window.chartB && chartB.destroy) chartB.destroy(); } catch(e){}
 
-    var recs = (typeof currentRows==='function') ? currentRows() : (state && state.state.records) || [];
+    var recs = (typeof currentRows==='function') ? currentRows() : (state && state.records) || [];
     var app  = (state && state.appName) || 'Maintenance Log';
 
     // If no data: clear canvases and return
@@ -1540,7 +1539,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const cur = (window.state && state.appName) || null;
       if(cur && cur !== __lastApp){
         __lastApp = cur;
-        if (Array.isArray(state.state.records)) state.state.records.length = 0; else state.state.records = [];
+        if (Array.isArray(state.records)) state.records.length = 0; else state.records = [];
         try { state.filters = {}; } catch(_){}
         // Rebuild UI from scratch
         if (typeof deriveFiltered === 'function') try { deriveFiltered(); } catch(_){}
@@ -1608,7 +1607,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 /* ForgeNova MVP - fix17_final
    - Each template has its own dataset (state.dataByApp[app]).
    - CSV upload saves rows to that template + localStorage.
-   - Switching templates restores rows into state.state.records, then re-renders table + charts.
+   - Switching templates restores rows into state.records, then re-renders table + charts.
    - Page reload preloads datasets from localStorage.
    - Does NOT change layout, CSS, or your existing functions.
 */
@@ -1641,7 +1640,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     setTimeout(function(){
       var app = curApp();
       if(!app) return;
-      var rows = (state && state.state.records) ? state.state.records.slice() : [];
+      var rows = (state && state.records) ? state.records.slice() : [];
       state.dataByApp[app] = rows;
       saveTemplate(app, rows);
       refreshTableAndCharts();
@@ -1671,7 +1670,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     var initial = curApp();
     if(initial && state.dataByApp[initial] && state.dataByApp[initial].length){
-      try { state.state.records = state.dataByApp[initial].slice(); } catch(e){}
+      try { state.records = state.dataByApp[initial].slice(); } catch(e){}
       refreshTableAndCharts();
     }
 
@@ -1685,7 +1684,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if(now && now !== last){
       last = now;
       var rows = (state.dataByApp[now] && state.dataByApp[now].slice()) || loadTemplate(now) || [];
-      try { state.state.records = rows; } catch(e){}
+      try { state.records = rows; } catch(e){}
       if(rows && rows.length){
         refreshTableAndCharts();
       } else {
@@ -1714,7 +1713,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     setTimeout(function(){
       var app = currentApp();
       if(!app) return;
-      var rows = (state && state.state.records) ? state.state.records.slice() : [];
+      var rows = (state && state.records) ? state.records.slice() : [];
       if(rows.length){ toggleChartArea(true); }
     },300);
   }
@@ -1775,7 +1774,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     var oldRebuild = window.rebuildCharts;
     window.rebuildCharts = function(){
       var app = curApp();
-      var rows = (window.state && window.state.dataByApp && state.dataByApp[app]) ? state.dataByApp[app] : (state.state.records||[]);
+      var rows = (window.state && window.state.dataByApp && state.dataByApp[app]) ? state.dataByApp[app] : (state.records||[]);
       if(!rows || !rows.length){
         destroyChartSafe(window.chartA); destroyChartSafe(window.chartB);
         clearCanvases();
@@ -1796,7 +1795,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       last=cur;
       var rows = (window.state && window.state.dataByApp && state.dataByApp[cur]) ? state.dataByApp[cur] : [];
       if(rows && rows.length){
-        window.state.state.records = rows;
+        window.state.records = rows;
         window.rebuildCharts();
       }else{
         destroyChartSafe(window.chartA); destroyChartSafe(window.chartB);
@@ -1830,7 +1829,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
           setTimeout(function(){
             var app = curApp();
             if(!app) return;
-            var rows = (state && state.state.records) ? state.state.records.slice() : [];
+            var rows = (state && state.records) ? state.records.slice() : [];
             state.dataByApp[app] = rows;
             saveTemplate(app, rows);
           },300);
@@ -1854,7 +1853,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if(init){
       var rows = state.dataByApp[init] || [];
       if(rows.length){
-        state.state.records = rows.slice();
+        state.records = rows.slice();
         if(typeof renderAll==='function') renderAll();
         if(typeof rebuildCharts==='function') rebuildCharts();
       }
@@ -1870,7 +1869,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       var rows = (state.dataByApp[cur] && state.dataByApp[cur].length) ? state.dataByApp[cur] : loadTemplate(cur);
       state.dataByApp[cur] = rows || [];
       if(rows && rows.length){
-        state.state.records = rows.slice();
+        state.records = rows.slice();
         if(typeof renderAll==='function') renderAll();
         if(typeof rebuildCharts==='function') rebuildCharts();
       }
@@ -1906,7 +1905,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       ensureState();
       var app = state.appName;
       // clear memory + storage
-      state.state.records = [];
+      state.records = [];
       state.dataByApp[app] = [];
       clearLocal(app);
       // refresh UI
@@ -1944,7 +1943,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         var app = state.appName;
         if(!confirm(`Are you sure you want to delete all data for "${app}"?`)) return;
         ensureState();
-        state.state.records = [];
+        state.records = [];
         state.dataByApp[app] = [];
         clearLocal(app);
         try{ if(typeof deriveFiltered==='function') deriveFiltered(); }catch(e){}
@@ -1962,7 +1961,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
           state.dataByApp[app] = [];
           clearLocal(app);
         });
-        state.state.records = [];
+        state.records = [];
         try{ if(typeof deriveFiltered==='function') deriveFiltered(); }catch(e){}
         try{ if(typeof renderAll==='function') renderAll(); }catch(e){}
         hideCharts();
@@ -2085,7 +2084,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if(sel) sel.value = last;
 
     var rows = loadRowsFor(last);
-    state.state.records = (rows && rows.slice) ? rows.slice() : [];
+    state.records = (rows && rows.slice) ? rows.slice() : [];
 
     // refresh views
     refreshUI(rows);
@@ -2110,7 +2109,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         if(raw){ rows = JSON.parse(raw) || []; state.dataByApp[app] = rows; }
       }catch(e){}
     }
-    state.state.records = (rows && rows.slice) ? rows.slice() : [];
+    state.records = (rows && rows.slice) ? rows.slice() : [];
     return rows || [];
   }
   function refreshUI(rows){
@@ -2153,7 +2152,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         stable = 0; // reset stability while we just forced it
       } else {
         // Already on last; check stability condition
-        var rows = (state && state.state.records) ? state.state.records : [];
+        var rows = (state && state.records) ? state.records : [];
         var area = $('chartArea');
         var isVisible = area ? area.classList.contains('visible') : true; // if no area, assume ok
         // Consider stable if either we have rows (persisted) or explicitly no rows but not being flipped back
@@ -2195,7 +2194,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         if(raw){ rows = JSON.parse(raw); state.dataByApp[state.appName] = rows; }
       }catch(e){}
     }
-    state.state.records = rows.slice();
+    state.records = rows.slice();
 
     // Render everything
     try{ if(typeof renderTable==='function') renderTable(rows); }catch(e){}
@@ -2223,7 +2222,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   <em>Note: On refresh, the app always defaults to Maintenance Log. Please reselect your template — your data will still be there.</em>
 </div>
     
-<!-- Supabase fetch state.records -->
+<!-- Supabase fetch records -->
 <script>
 async function loadRecords() {
   try {
@@ -2243,18 +2242,18 @@ if (templateError || !templates || templates.length === 0) {
 const template = templates[0];
 
 
-    // 2. Fetch state.records linked to that template
+    // 2. Fetch records linked to that template
     const { data: records, error: recordsError } = await supabaseClient
-      .from('state.records')
+      .from('records')
       .select('data, uploaded_at')
       .eq('template_id', template.id);
 
-    if (state.recordsError) {
-      console.error('Error fetching state.records:', state.recordsError);
+    if (recordsError) {
+      console.error('Error fetching records:', recordsError);
       return;
     }
 async function loadRecords() {
-  const tableBody = document.querySelector("#tableBody"); // tbody of your Data Table
+  const tableBody = document.querySelector("#dataTableBody"); // tbody of your Data Table
   tableBody.innerHTML = ""; // clear old rows
 
   try {
@@ -2271,21 +2270,21 @@ async function loadRecords() {
 
     const template = templates[0];
 
-    // 2. Fetch state.records
+    // 2. Fetch records
     const { data: records, error: recordsError } = await supabaseClient
-      .from('state.records')
+      .from('records')
       .select('data, uploaded_at')
       .eq('template_id', template.id)
       .order('uploaded_at', { ascending: false });
 
-    if (state.recordsError) {
-      console.error("Error fetching state.records:", state.recordsError);
+    if (recordsError) {
+      console.error("Error fetching records:", recordsError);
       return;
     }
 
     // 3. Insert into table
-    if (state.records && state.records.length > 0) {
-      state.records.forEach((row) => {
+    if (records && records.length > 0) {
+      records.forEach((row) => {
         const record = row.data;
         const tr = document.createElement("tr");
 
@@ -2303,7 +2302,7 @@ async function loadRecords() {
       });
     } else {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="7">No state.records found.</td>`;
+      tr.innerHTML = `<td colspan="7">No records found.</td>`;
       tableBody.appendChild(tr);
     }
   } catch (err) {
@@ -2314,100 +2313,55 @@ async function loadRecords() {
 loadRecords();
 
 </script>
+
+<!-- Output container -->
+<div id="output" style="white-space: pre; font-family: monospace; margin:20px; padding:10px; border:1px solid #ddd;"></div>
+
 <script>
 async function loadRecords() {
-  const tableBody = document.querySelector("#tableBody");
-  tableBody.innerHTML = "";
+  const output = document.getElementById('output');
+  output.innerText = "Loading records...";
 
   try {
-    const { data: templates, error: templateError } = await supabaseClient
+    // Get the template id for "Maintenance Log"
+    const { data: template, error: templateError } = await supabaseClient
       .from('templates')
       .select('id')
-      .eq('name', 'Maintenance Log');
+      .eq('name', 'Maintenance Log')
+      .single();
 
-    if (templateError || !templates || templates.length === 0) {
-      console.error("Template not found:", templateError);
+    if (templateError) {
+      output.innerText = "Error: could not load template.";
+      console.error('Template error:', templateError);
       return;
     }
 
-    const template = templates[0];
-
+    // Fetch records linked to that template
     const { data: records, error: recordsError } = await supabaseClient
-      .from('state.records')
+      .from('records')
       .select('data, uploaded_at')
-      .eq('template_id', template.id)
-      .order('uploaded_at', { ascending: false });
+      .eq('template_id', template.id);
 
-    if (state.recordsError) {
-      console.error("Error fetching state.records:", state.recordsError);
+    if (recordsError) {
+      output.innerText = "Error loading records.";
+      console.error('Records error:', recordsError);
       return;
     }
 
-    console.log("Fetched records:", records);
-
-    if (state.records && state.records.length > 0) {
-      state.records.forEach((row) => {
-        const record = row.data;
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${record.machine_id || ""}</td>
-          <td>${row.uploaded_at ? new Date(row.uploaded_at).toLocaleDateString() : ""}</td>
-          <td>${record.shift || ""}</td>
-          <td>${record.downtime || ""}</td>
-          <td>${record.issue || ""}</td>
-          <td>${record.notes || ""}</td>
-          <td>—</td>
-        `;
-        tableBody.appendChild(tr);
-      });
+    // Render records
+    if (!records || records.length === 0) {
+      output.innerText = "No records found.";
     } else {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="7">No state.records found.</td>`;
-      tableBody.appendChild(tr);
+      output.innerText = JSON.stringify(records, null, 2);
     }
   } catch (err) {
-    console.error("Unexpected error:", err);
+    output.innerText = "Unexpected error.";
+    console.error('Unexpected error:', err);
   }
-}
-// Update app state so charts and KPIs refresh
-state.state.records = state.records.map(r => r.data);
-deriveFiltered();
-renderAll();
-// After populating table
-if (state.records && state.records.length > 0) {
-  state.records.forEach((row) => {
-    const record = row.data;
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${record.machine_id || ""}</td>
-      <td>${record.date || (row.uploaded_at ? new Date(row.uploaded_at).toLocaleDateString() : "")}</td>
-      <td>${record.shift || ""}</td>
-      <td>${record.downtime_min || ""}</td>
-      <td>${record.reason || ""}</td>
-      <td>${record.notes || ""}</td>
-      <td>—</td>
-    `;
-    tableBody.appendChild(tr);
-  });
-
-  // 🔥 Sync Supabase data into app state
-  state.records = records.map(r => r.data);
-  deriveFiltered();
-  renderAll();
-
-} else {
-  const tr = document.createElement("tr");
-  tr.innerHTML = `<td colspan="7">No state.records found.</td>`;
-  tableBody.appendChild(tr);
-
-  // Reset state if no data
-  state.records = [];
-  deriveFiltered();
-  renderAll();
 }
 
 loadRecords();
 </script>
-
 </body>
 </html>
+
