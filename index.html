@@ -2252,23 +2252,66 @@ const template = templates[0];
       console.error('Error fetching records:', recordsError);
       return;
     }
+async function loadRecords() {
+  const tableBody = document.querySelector("#dataTableBody"); // tbody of your Data Table
+  tableBody.innerHTML = ""; // clear old rows
 
-    console.log('Records:', records);
+  try {
+    // 1. Get template id for "Maintenance Log"
+    const { data: templates, error: templateError } = await supabaseClient
+      .from('templates')
+      .select('id')
+      .eq('name', 'Maintenance Log');
 
-    // 3. Render inside output div
-    const output = document.getElementById('output');
-    if (records.length === 0) {
-      output.innerText = "No records found.";
+    if (templateError || !templates || templates.length === 0) {
+      console.error("Template not found:", templateError);
+      return;
+    }
+
+    const template = templates[0];
+
+    // 2. Fetch records
+    const { data: records, error: recordsError } = await supabaseClient
+      .from('records')
+      .select('data, uploaded_at')
+      .eq('template_id', template.id)
+      .order('uploaded_at', { ascending: false });
+
+    if (recordsError) {
+      console.error("Error fetching records:", recordsError);
+      return;
+    }
+
+    // 3. Insert into table
+    if (records && records.length > 0) {
+      records.forEach((row) => {
+        const record = row.data;
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td>${record.machine_id || ""}</td>
+          <td>${row.uploaded_at ? new Date(row.uploaded_at).toLocaleDateString() : ""}</td>
+          <td>${record.shift || ""}</td>
+          <td>${record.downtime || ""}</td>
+          <td>${record.issue || ""}</td>
+          <td>${record.notes || ""}</td>
+          <td>—</td>
+        `;
+
+        tableBody.appendChild(tr);
+      });
     } else {
-      output.innerText = JSON.stringify(records, null, 2);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="7">No records found.</td>`;
+      tableBody.appendChild(tr);
     }
   } catch (err) {
-    console.error('Unexpected error:', err);
+    console.error("Unexpected error:", err);
   }
 }
 
-// Run after page loads
 loadRecords();
+
 </script>
 
 <!-- Output container -->
