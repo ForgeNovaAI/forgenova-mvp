@@ -2368,6 +2368,11 @@ async function loadRecords() {
     console.error("Unexpected error:", err);
   }
 }
+// Update app state so charts and KPIs refresh
+state.records = records.map(r => r.data);
+deriveFiltered();
+renderAll();
+
 loadRecords();
 </script>
 </script>
