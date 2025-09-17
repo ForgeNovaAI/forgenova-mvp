@@ -2313,54 +2313,63 @@ async function loadRecords() {
 loadRecords();
 
 </script>
-
-<!-- Output container -->
-<div id="output" style="white-space: pre; font-family: monospace; margin:20px; padding:10px; border:1px solid #ddd;"></div>
-
 <script>
 async function loadRecords() {
-  const output = document.getElementById('output');
-  output.innerText = "Loading records...";
+  const tableBody = document.querySelector("#dataTableBody");
+  tableBody.innerHTML = "";
 
   try {
-    // Get the template id for "Maintenance Log"
-    const { data: template, error: templateError } = await supabaseClient
+    const { data: templates, error: templateError } = await supabaseClient
       .from('templates')
       .select('id')
-      .eq('name', 'Maintenance Log')
-      .single();
+      .eq('name', 'Maintenance Log');
 
-    if (templateError) {
-      output.innerText = "Error: could not load template.";
-      console.error('Template error:', templateError);
+    if (templateError || !templates || templates.length === 0) {
+      console.error("Template not found:", templateError);
       return;
     }
 
-    // Fetch records linked to that template
+    const template = templates[0];
+
     const { data: records, error: recordsError } = await supabaseClient
       .from('records')
       .select('data, uploaded_at')
-      .eq('template_id', template.id);
+      .eq('template_id', template.id)
+      .order('uploaded_at', { ascending: false });
 
     if (recordsError) {
-      output.innerText = "Error loading records.";
-      console.error('Records error:', recordsError);
+      console.error("Error fetching records:", recordsError);
       return;
     }
 
-    // Render records
-    if (!records || records.length === 0) {
-      output.innerText = "No records found.";
+    console.log("Fetched records:", records);
+
+    if (records && records.length > 0) {
+      records.forEach((row) => {
+        const record = row.data;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${record.machine_id || ""}</td>
+          <td>${row.uploaded_at ? new Date(row.uploaded_at).toLocaleDateString() : ""}</td>
+          <td>${record.shift || ""}</td>
+          <td>${record.downtime || ""}</td>
+          <td>${record.issue || ""}</td>
+          <td>${record.notes || ""}</td>
+          <td>—</td>
+        `;
+        tableBody.appendChild(tr);
+      });
     } else {
-      output.innerText = JSON.stringify(records, null, 2);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="7">No records found.</td>`;
+      tableBody.appendChild(tr);
     }
   } catch (err) {
-    output.innerText = "Unexpected error.";
-    console.error('Unexpected error:', err);
+    console.error("Unexpected error:", err);
   }
 }
-
 loadRecords();
+</script>
 </script>
 </body>
 </html>
