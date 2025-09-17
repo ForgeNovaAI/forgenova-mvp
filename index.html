@@ -2221,26 +2221,26 @@ document.addEventListener('DOMContentLoaded', ()=>{
   Data is saved per template in your browser (localStorage). No server required.<br>
   <em>Note: On refresh, the app always defaults to Maintenance Log. Please reselect your template — your data will still be there.</em>
 </div>
-    
+    <div class="footer-note">
+  Data is saved per template in your browser (localStorage). No server required.<br>
+  <em>Note: On refresh, the app always defaults to Maintenance Log. Please reselect your template — your data will still be there.</em>
+</div>
+
 <!-- Supabase fetch records -->
 <script>
 async function loadRecords() {
   try {
     // 1. Get the template id for "Maintenance Log"
-    const { data: templates, error: templateError } = await supabaseClient
-  .from('templates')
-  .select('id')
-  .eq('name', 'Maintenance Log');
+    const { data: template, error: templateError } = await supabaseClient
+      .from('templates')
+      .select('id')
+      .eq('name', 'Maintenance Log')
+      .single();
 
-if (templateError || !templates || templates.length === 0) {
-  output.innerText = "Error: could not load template.";
-  console.error('Template error:', templateError);
-  return;
-}
-
-// Just take the first row if there are duplicates
-const template = templates[0];
-
+    if (templateError) {
+      console.error('Error fetching template:', templateError);
+      return;
+    }
 
     // 2. Fetch records linked to that template
     const { data: records, error: recordsError } = await supabaseClient
@@ -2252,115 +2252,8 @@ const template = templates[0];
       console.error('Error fetching records:', recordsError);
       return;
     }
-async function loadRecords() {
-  const tableBody = document.querySelector("#dataTableBody"); // tbody of your Data Table
-  tableBody.innerHTML = ""; // clear old rows
 
-  try {
-    // 1. Get template id for "Maintenance Log"
-    const { data: templates, error: templateError } = await supabaseClient
-      .from('templates')
-      .select('id')
-      .eq('name', 'Maintenance Log');
+    console.log('Records:', records);
 
-    if (templateError || !templates || templates.length === 0) {
-      console.error("Template not found:", templateError);
-      return;
-    }
+    // 3. Render inside output div
 
-    const template = templates[0];
-
-    // 2. Fetch records
-    const { data: records, error: recordsError } = await supabaseClient
-      .from('records')
-      .select('data, uploaded_at')
-      .eq('template_id', template.id)
-      .order('uploaded_at', { ascending: false });
-
-    if (recordsError) {
-      console.error("Error fetching records:", recordsError);
-      return;
-    }
-
-    // 3. Insert into table
-    if (records && records.length > 0) {
-      records.forEach((row) => {
-        const record = row.data;
-        const tr = document.createElement("tr");
-
-        tr.innerHTML = `
-          <td>${record.machine_id || ""}</td>
-          <td>${row.uploaded_at ? new Date(row.uploaded_at).toLocaleDateString() : ""}</td>
-          <td>${record.shift || ""}</td>
-          <td>${record.downtime || ""}</td>
-          <td>${record.issue || ""}</td>
-          <td>${record.notes || ""}</td>
-          <td>—</td>
-        `;
-
-        tableBody.appendChild(tr);
-      });
-    } else {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="7">No records found.</td>`;
-      tableBody.appendChild(tr);
-    }
-  } catch (err) {
-    console.error("Unexpected error:", err);
-  }
-}
-
-loadRecords();
-
-</script>
-
-<!-- Output container -->
-<div id="output" style="white-space: pre; font-family: monospace; margin:20px; padding:10px; border:1px solid #ddd;"></div>
-
-<script>
-async function loadRecords() {
-  const output = document.getElementById('output');
-  output.innerText = "Loading records...";
-
-  try {
-    // Get the template id for "Maintenance Log"
-    const { data: template, error: templateError } = await supabaseClient
-      .from('templates')
-      .select('id')
-      .eq('name', 'Maintenance Log')
-      .single();
-
-    if (templateError) {
-      output.innerText = "Error: could not load template.";
-      console.error('Template error:', templateError);
-      return;
-    }
-
-    // Fetch records linked to that template
-    const { data: records, error: recordsError } = await supabaseClient
-      .from('records')
-      .select('data, uploaded_at')
-      .eq('template_id', template.id);
-
-    if (recordsError) {
-      output.innerText = "Error loading records.";
-      console.error('Records error:', recordsError);
-      return;
-    }
-
-    // Render records
-    if (!records || records.length === 0) {
-      output.innerText = "No records found.";
-    } else {
-      output.innerText = JSON.stringify(records, null, 2);
-    }
-  } catch (err) {
-    output.innerText = "Unexpected error.";
-    console.error('Unexpected error:', err);
-  }
-}
-
-loadRecords();
-</script>
-</body>
-</html>
