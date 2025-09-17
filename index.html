@@ -2225,34 +2225,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
 <!-- Supabase fetch records -->
 <script>
 async function loadRecords() {
-  try {
-    // 1. Get the template id for "Maintenance Log"
-    const { data: templates, error: templateError } = await supabaseClient
-  .from('templates')
-  .select('id')
-  .eq('name', 'Maintenance Log');
-
-if (templateError || !templates || templates.length === 0) {
-  output.innerText = "Error: could not load template.";
-  console.error('Template error:', templateError);
-  return;
-}
-
-// Just take the first row if there are duplicates
-const template = templates[0];
-
-
-    // 2. Fetch records linked to that template
-    const { data: records, error: recordsError } = await supabaseClient
-      .from('records')
-      .select('data, uploaded_at')
-      .eq('template_id', template.id);
-
-    if (recordsError) {
-      console.error('Error fetching records:', recordsError);
-      return;
-    }
-async function loadRecords() {
   const tableBody = document.querySelector("#tableBody"); // tbody of your Data Table
   tableBody.innerHTML = ""; // clear old rows
 
