@@ -417,41 +417,8 @@ const state = { appName: lastTemplate, fields: [
           const i=+btn.dataset.edit; fillForm(state.records[i]);
           els.saveEntry.scrollIntoView({behavior:'smooth', block:'center'});
           const original=els.saveEntry.onclick;
-            
-     $('saveEntry').onclick = async (e) => {
-  e.preventDefault();
-  const formData = readForm(); // collect form inputs
-
-  try {
-    // Get the current template id (e.g., Maintenance Log)
-    const { data: template, error: templateError } = await supabaseClient
-      .from('templates')
-      .select('id')
-      .eq('name', state.appName)
-      .single();
-
-    if (templateError) throw templateError;
-
-    // Insert new record into Supabase
-    const { error: insertError } = await supabaseClient
-      .from('records')
-      .insert([{ template_id: template.id, data: formData }]);
-
-    if (insertError) throw insertError;
-
-    toast("✅ Entry saved to Supabase!");
-
-    // Reset the form
-    $('entryForm').reset();
-
-    // Reload data table + charts from Supabase
-    loadRecords();
-
-  } catch (err) {
-    console.error("Save failed:", err);
-    toast("❌ Could not save entry");
-  }
-};
+          els.saveEntry.onclick=(e)=>{ e.preventDefault(); state.records[i]=readForm(); deriveFiltered(); renderAll(); clearForm(); els.saveEntry.onclick=original; saveLocalForTemplate(); };
+        };
       });
     }
 
@@ -2333,3 +2300,4 @@ loadRecords();
 </script>
 </body>
 </html>
+
