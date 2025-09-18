@@ -2253,39 +2253,50 @@ async function loadRecords() {
       console.error("Error fetching records:", recordsError);
       return;
     }
+      
+// 3. Insert into table
+if (records && records.length > 0) {
+  records.forEach((row) => {
+    const record = row.data;
+    const tr = document.createElement("tr");
 
-    // 3. Insert into table
-    if (records && records.length > 0) {
-      records.forEach((row) => {
-        const record = row.data;
-        const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${record.machine_id || ""}</td>
+      <td>${row.uploaded_at ? new Date(row.uploaded_at).toLocaleDateString() : ""}</td>
+      <td>${record.shift || ""}</td>
+      <td>${record.downtime || ""}</td>
+      <td>${record.issue || ""}</td>
+      <td>${record.notes || ""}</td>
+      <td>—</td>
+    `;
 
-        tr.innerHTML = `
-          <td>${record.machine_id || ""}</td>
-          <td>${row.uploaded_at ? new Date(row.uploaded_at).toLocaleDateString() : ""}</td>
-          <td>${record.shift || ""}</td>
-          <td>${record.downtime || ""}</td>
-          <td>${record.issue || ""}</td>
-          <td>${record.notes || ""}</td>
-          <td>—</td>
-        `;
+    tableBody.appendChild(tr);
+  });
 
-        tableBody.appendChild(tr);
-      });
-    } else {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="7">No records found.</td>`;
-      tableBody.appendChild(tr);
-    }
-  } catch (err) {
-    console.error("Unexpected error:", err);
+  // 🔥 Sync Supabase rows into app state and refresh insights
+  state.records = records.map(r => r.data);
+  if (typeof deriveFiltered === "function" && typeof renderAll === "function") {
+    deriveFiltered();
+    renderAll();
+  }
+
+} else {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td colspan="7">No records found.</td>`;
+  tableBody.appendChild(tr);
+
+  // Clear state and refresh insights
+  state.records = [];
+  if (typeof deriveFiltered === "function" && typeof renderAll === "function") {
+    deriveFiltered();
+    renderAll();
   }
 }
-
+} catch (err) {
+  console.error("Unexpected error:", err);
+}
+}
 loadRecords();
-
-</script>
 </script>
 </body>
 </html>
-
