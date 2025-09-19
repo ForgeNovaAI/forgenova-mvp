@@ -205,12 +205,16 @@ main, .panel { min-width: 0; }
 </div>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
 <script>
-    // Determine last template or fallback
-let lastTemplate = null;
-try { lastTemplate = localStorage.getItem("forgenova_lastTemplate"); } catch(e) {}
-if (!lastTemplate || !['Maintenance Log','Production QC','Inventory Count','Safety Audit'].includes(lastTemplate)) {
-  lastTemplate = 'Maintenance Log';
-}
+   // Determine last template or fallback  (safe, no new globals)
+let lastTemplate = (() => {
+  try {
+    const saved = localStorage.getItem("forgenova_lastTemplate");
+    const valid = ['Maintenance Log','Production QC','Inventory Count','Safety Audit'];
+    if (valid.includes(saved)) return saved;
+  } catch (e) {}
+  return 'Maintenance Log';
+})();
+
 
 const state = { appName: lastTemplate, fields: [
       {label:'Machine ID', key:'machine_id', type:'text', required:true},
