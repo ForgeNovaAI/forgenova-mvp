@@ -204,44 +204,13 @@ main, .panel { min-width: 0; }
 </main>
 </div>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
-
-    <script>
-  // Determine last template or fallback
-  let lastTemplate = null;
-  try { lastTemplate = localStorage.getItem("forgenova_lastTemplate"); } catch(e) {}
-
-  const validTemplates = ['Maintenance Log','Production QC','Inventory Count','Safety Audit'];
-
-  // Fallback to Maintenance Log if nothing valid is stored
-  if (!lastTemplate || !validTemplates.includes(lastTemplate)) {
-    lastTemplate = 'Maintenance Log';
-  }
-
-  // Save it back so refresh always has a valid template
-  try { localStorage.setItem("forgenova_lastTemplate", lastTemplate); } catch(e) {}
-
-  // Keep your state initialization working
-  const state = { appName: lastTemplate, fields: [ 
-      {label:'Machine ID', key:'machine_id', type:'text', required:true},
-      {label:'Date', key:'date', type:'date', required:true},
-      {label:'Shift', key:'shift', type:'select', options:['A','B','C']},
-      {label:'Downtime (min)', key:'downtime_min', type:'number'},
-      {label:'Reason', key:'reason', type:'select', options:['Electrical','Mechanical','Operator','Planned','Other']},
-      {label:'Notes', key:'notes', type:'textarea'}
-  ], records: [], filtered: [], persist: false };
-
-  // Capture clicks on template buttons/tabs and store in localStorage
-  document.addEventListener("click", function(e){
-    const btn = e.target.closest("[data-template]");
-    if (btn) {
-      const t = btn.getAttribute("data-template");
-      if (t && validTemplates.includes(t)) {
-        try { localStorage.setItem("forgenova_lastTemplate", t); } catch(e) {}
-      }
-    }
-  });
-</script>
-
+<script>
+    // Determine last template or fallback
+let lastTemplate = null;
+try { lastTemplate = localStorage.getItem("forgenova_lastTemplate"); } catch(e) {}
+if (!lastTemplate || !['Maintenance Log','Production QC','Inventory Count','Safety Audit'].includes(lastTemplate)) {
+  lastTemplate = 'Maintenance Log';
+}
 
 const state = { appName: lastTemplate, fields: [
       {label:'Machine ID', key:'machine_id', type:'text', required:true},
