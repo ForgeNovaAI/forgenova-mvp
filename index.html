@@ -513,10 +513,43 @@ const state = { appName: lastTemplate, fields: [
         state.records=[]; deriveFiltered(); renderAll(); clearLocalForTemplate(); toast('Deleted data for current template'); $('status').textContent='Template data deleted';
       }
     };
-    $('saveEntry').onclick = (e)=>{ e.preventDefault(); state.records.push(readForm()); deriveFiltered(); renderAll(); $('entryForm').reset(); if(state.persist) saveLocalForTemplate(); };
-    $('clearForm').onclick = (e)=>{ e.preventDefault(); $('entryForm').reset(); };
-    $('scrollToForm').onclick = ()=> $('saveEntry').scrollIntoView({behavior:'smooth', block:'center'});
-    $('filterInput').addEventListener('input', ()=>{ deriveFiltered(); renderAll(); });
+    
+$('saveEntry').onclick = async (e)=>{
+  e.preventDefault();
+
+  // 1. Read form data
+  const record = readForm();
+
+  // 2. Get the active template UUID from Supabase
+  const { data: template, error } = await supabaseClient
+    .from('templates')
+    .select('id')
+    .eq('name', state.appName)   // state.appName = current template name
+    .single();
+
+  if (error || !template) {
+    console.error("Template not found:", error);
+    return;
+  }
+
+  // 3. Save record into Supabase
+  const { data: inserted, error: insertError } = await supabaseClient
+    .from('records')
+    .insert([{ template_id: template.id, data: record }])
+    .select();
+
+  if (insertError) {
+    console.error("Insert error:", insertError);
+    return;
+  }
+
+  // 4. Update local state + UI
+  state.records.push(record);
+  deriveFiltered();
+  renderAll();
+  $('entryForm').reset();
+  if (state.persist) saveLocalForTemplate();
+};
 
     $('persistToggle').addEventListener('change', ()=>{
       state.persist = $('persistToggle').checked;
