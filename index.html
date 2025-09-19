@@ -513,11 +513,40 @@ const state = { appName: lastTemplate, fields: [
         state.records=[]; deriveFiltered(); renderAll(); clearLocalForTemplate(); toast('Deleted data for current template'); $('status').textContent='Template data deleted';
       }
     };
-    $('saveEntry').onclick = (e)=>{ e.preventDefault(); state.records.push(readForm()); deriveFiltered(); renderAll(); $('entryForm').reset(); if(state.persist) saveLocalForTemplate(); };
-    $('clearForm').onclick = (e)=>{ e.preventDefault(); $('entryForm').reset(); };
-    $('scrollToForm').onclick = ()=> $('saveEntry').scrollIntoView({behavior:'smooth', block:'center'});
-    $('filterInput').addEventListener('input', ()=>{ deriveFiltered(); renderAll(); });
 
+$('saveEntry').onclick = async (e) => {
+  e.preventDefault();
+  const formData = readForm(); // collect form inputs
+
+  try {
+    // Get the current template id (based on which template is active)
+    const { data: template, error: templateError } = await supabaseClient
+      .from('templates')
+      .select('id')
+      .eq('name', state.appName)
+      .single();
+
+    if (templateError) throw templateError;
+
+    // Insert record tied to that template
+    const { error: insertError } = await supabaseClient
+      .from('records')
+      .insert([{ template_id: template.id, data: formData }]);
+
+    if (insertError) throw insertError;
+
+    toast(`✅ Entry saved to Supabase (${state.appName})!`);
+
+    $('entryForm').reset();
+    loadRecords(); // refresh table + charts for current template
+  } catch (err) {
+    console.error("Save failed:", err);
+    toast("❌ Could not save entry");
+  }
+};
+
+
+    
     $('persistToggle').addEventListener('change', ()=>{
       state.persist = $('persistToggle').checked;
       try{ localStorage.setItem(PERSIST_FLAG_KEY, state.persist ? '1' : '0'); }catch(e){}
