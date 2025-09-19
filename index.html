@@ -204,13 +204,7 @@ main, .panel { min-width: 0; }
 </main>
 </div>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
-<script>
-    // Determine last template or fallback
-let lastTemplate = null;
-try { lastTemplate = localStorage.getItem("forgenova_lastTemplate"); } catch(e) {}
-if (!lastTemplate || !['Maintenance Log','Production QC','Inventory Count','Safety Audit'].includes(lastTemplate)) {
-  lastTemplate = 'Maintenance Log';
-}
+
 <script>
 (function(){
   // Persist the last-used template name only
