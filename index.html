@@ -204,70 +204,13 @@ main, .panel { min-width: 0; }
 </main>
 </div>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
-
 <script>
-    // Template mapping
-    const templates = {
-        "Maintenance Log": "f3163c56-fd2c-489c-8bb8-186c693f8d4f",
-        "Production QC": "f0b3e0a3-a4e4-418e-ad76-707e87e8a589",
-        "Inventory Count": "9da6a20b-5411-4fee-9e89-689c5bddd49d",
-        "Safety Audit": "e211b9ac-de21-4d08-b92d-1f163536dc92"
-    };
-
-    const validTemplates = Object.keys(templates);
-
-    // Wrapper: load template by name or UUID
-    function loadTemplateData(templateRef) {
-        let templateId = null;
-
-        // If passed a name
-        if (validTemplates.includes(templateRef)) {
-            templateId = templates[templateRef];
-        } 
-        // If passed a UUID directly
-        else if (Object.values(templates).includes(templateRef)) {
-            templateId = templateRef;
-        }
-
-        if (!templateId) {
-            console.error("Invalid template reference:", templateRef);
-            return;
-        }
-
-        // 🚀 Your actual fetch/refresh logic here
-        // Example: fetch from Supabase
-        console.log("Loading template:", templateRef, "UUID:", templateId);
-        // supabase.from("your_table").select("*").eq("template_id", templateId)...
-    }
-
-    // Save template selection
-    function setActiveTemplate(templateName) {
-        if (validTemplates.includes(templateName)) {
-            localStorage.setItem("forgenova_lastTemplate", templateName);
-            loadTemplateData(templateName);
-        }
-    }
-
-    // On refresh → restore last template
-    let lastTemplate = localStorage.getItem("forgenova_lastTemplate");
-    if (!lastTemplate || !validTemplates.includes(lastTemplate)) {
-        lastTemplate = 'Maintenance Log';
-        localStorage.setItem("forgenova_lastTemplate", lastTemplate);
-    }
-    loadTemplateData(lastTemplate);
-
-    // Attach click handlers for template buttons
-    document.addEventListener("DOMContentLoaded", () => {
-        validTemplates.forEach(templateName => {
-            const el = document.getElementById(templateName.replace(/\s+/g, '_'));
-            if (el) {
-                el.addEventListener("click", () => setActiveTemplate(templateName));
-            }
-        });
-    });
-</script>
-
-    
+    // Determine last template or fallback
+let lastTemplate = null;
+try { lastTemplate = localStorage.getItem("forgenova_lastTemplate"); } catch(e) {}
+if (!lastTemplate || !['Maintenance Log','Production QC','Inventory Count','Safety Audit'].includes(lastTemplate)) {
+  lastTemplate = 'Maintenance Log';
+}
 
 const state = { appName: lastTemplate, fields: [
       {label:'Machine ID', key:'machine_id', type:'text', required:true},
@@ -570,43 +513,10 @@ const state = { appName: lastTemplate, fields: [
         state.records=[]; deriveFiltered(); renderAll(); clearLocalForTemplate(); toast('Deleted data for current template'); $('status').textContent='Template data deleted';
       }
     };
-    
-$('saveEntry').onclick = async (e)=>{
-  e.preventDefault();
-
-  // 1. Read form data
-  const record = readForm();
-
-  // 2. Get the active template UUID from Supabase
-  const { data: template, error } = await supabaseClient
-    .from('templates')
-    .select('id')
-    .eq('name', state.appName)   // state.appName = current template name
-    .single();
-
-  if (error || !template) {
-    console.error("Template not found:", error);
-    return;
-  }
-
-  // 3. Save record into Supabase
-  const { data: inserted, error: insertError } = await supabaseClient
-    .from('records')
-    .insert([{ template_id: template.id, data: record }])
-    .select();
-
-  if (insertError) {
-    console.error("Insert error:", insertError);
-    return;
-  }
-
-  // 4. Update local state + UI
-  state.records.push(record);
-  deriveFiltered();
-  renderAll();
-  $('entryForm').reset();
-  if (state.persist) saveLocalForTemplate();
-};
+    $('saveEntry').onclick = (e)=>{ e.preventDefault(); state.records.push(readForm()); deriveFiltered(); renderAll(); $('entryForm').reset(); if(state.persist) saveLocalForTemplate(); };
+    $('clearForm').onclick = (e)=>{ e.preventDefault(); $('entryForm').reset(); };
+    $('scrollToForm').onclick = ()=> $('saveEntry').scrollIntoView({behavior:'smooth', block:'center'});
+    $('filterInput').addEventListener('input', ()=>{ deriveFiltered(); renderAll(); });
 
     $('persistToggle').addEventListener('change', ()=>{
       state.persist = $('persistToggle').checked;
@@ -2389,5 +2299,6 @@ loadRecords();
 </script>
 </body>
 </html>
+
 
 
