@@ -211,6 +211,83 @@ try { lastTemplate = localStorage.getItem("forgenova_lastTemplate"); } catch(e) 
 if (!lastTemplate || !['Maintenance Log','Production QC','Inventory Count','Safety Audit'].includes(lastTemplate)) {
   lastTemplate = 'Maintenance Log';
 }
+<script>
+(function(){
+  // Persist the last-used template name only
+  const STORAGE_KEY = 'forgenova_lastTemplate';
+  const NAMES = ['Maintenance Log','Production QC','Inventory Count','Safety Audit'];
+
+  // Extract a template name from a clicked element (data-attribute, id, or text)
+  function nameFromEl(el){
+    if(!el) return null;
+    // Preferred: <button data-template="Production QC">...</button>
+    if (el.dataset && el.dataset.template && NAMES.includes(el.dataset.template)) return el.dataset.template;
+    // Fallback: id="Production_QC"
+    if (el.id) {
+      const guess = el.id.replace(/_/g,' ');
+      if (NAMES.includes(guess)) return guess;
+    }
+    // Last resort: exact text match
+    const txt = (el.textContent || '').trim();
+    if (NAMES.includes(txt)) return txt;
+    return null;
+  }
+
+  // Save the name whenever a template control is clicked
+  document.addEventListener('click', function(e){
+    const el = e.target.closest(
+      // any element explicitly marked with data-template
+      '[data-template],' +
+      // common explicit ids if you use them
+      '#Maintenance_Log, #Production_QC, #Inventory_Count, #Safety_Audit,' +
+      // common classes you might already use for tabs/buttons
+      '.template-tab, .template-button'
+    );
+    const name = nameFromEl(el);
+    if (name) {
+      try { localStorage.setItem(STORAGE_KEY, name); } catch(_) {}
+    }
+  }, true); // capture early so we record even if other handlers stop propagation
+
+  // Try to locate the DOM element that switches to a given template name
+  function findTemplateElement(name){
+    // Best: data-template
+    let el = document.querySelector(`[data-template="${name}"]`);
+    if (el) return el;
+    // Next: id with underscores
+    el = document.getElementById(name.replace(/\s+/g,'_'));
+    if (el) return el;
+    // Last resort: match visible text on common clickable elements
+    const candidates = Array.from(document.querySelectorAll('button,a,li,[role="tab"]'));
+    return candidates.find(c => (c.textContent || '').trim() === name) || null;
+  }
+
+  function getLast(){
+    let v = null;
+    try { v = localStorage.getItem(STORAGE_KEY); } catch(_) {}
+    return NAMES.includes(v) ? v : 'Maintenance Log';
+  }
+
+  // Boot: click the saved tab so your own handlers run
+  function boot(){
+    const name = getLast();
+    const el = findTemplateElement(name);
+    if (el) {
+      el.click(); // triggers your existing logic (no overrides)
+    } else if (typeof window.loadTemplateData === 'function') {
+      // Fallback: call your existing loader with the NAME (safer than UUID)
+      try { window.loadTemplateData(name); } catch (err) { console.warn('loadTemplateData(name) failed:', err); }
+    }
+  }
+
+  // Run after everything is ready so we don't race your other scripts
+  if (document.readyState === 'complete') {
+    setTimeout(boot, 0);
+  } else {
+    window.addEventListener('load', boot);
+  }
+})();
+</script>
 
 const state = { appName: lastTemplate, fields: [
       {label:'Machine ID', key:'machine_id', type:'text', required:true},
