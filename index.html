@@ -150,7 +150,7 @@ main, .panel { min-width: 0; }
 <option value="replace">Replace</option>
 </select>
 <label class="btn small" style="gap:6px">
-<input id="persistToggle" type="checkbox"/> Remember
+<input id="persistToggle" type="checkbox" checked/> Remember
       </label>
 <button class="btn" id="btnClearFilters" title="Clear filters &amp; sorting (does not delete data)" type="button">🧽 Clear Filters</button>
 <button class="btn" id="deleteDataBtn">🗑️ Delete Data</button>
@@ -223,7 +223,7 @@ const state = { appName: lastTemplate, fields: [
       {label:'Downtime (min)', key:'downtime_min', type:'number'},
       {label:'Reason',     key:'reason',     type:'select', options:['Electrical','Mechanical','Operator','Planned','Other']},
       {label:'Notes',      key:'notes',      type:'textarea'}
-    ], records: [], filtered: [], persist: false };
+    ], records: [], filtered: [], persist: true };
 
     const PERSIST_FLAG_KEY = 'forgenova_mvp_persist_on';
 
@@ -274,8 +274,31 @@ const state = { appName: lastTemplate, fields: [
     function toast(msg, ms=2200){ const t=$('toast'); if(!t) return; t.textContent=msg; t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'), ms); }
 
     function templateStorageKey(appName){ return 'forgenova_mvp_template_'+ slug(appName||state.appName); }
-    function saveLocalForTemplate(){ if(!state.persist) return; const key=templateStorageKey(state.appName); const snap={appName:state.appName, fields:state.fields, records:state.records, ts:Date.now()}; try{ localStorage.setItem(key, JSON.stringify(snap)); }catch(e){} }
-    function loadLocalForTemplate(appName){ const key=templateStorageKey(appName); try{ const raw=localStorage.getItem(key); return raw? JSON.parse(raw): null; }catch(e){ return null; } }
+    function saveLocalForTemplate(){ 
+      console.log('saveLocalForTemplate called - persist:', state.persist, 'records:', state.records.length);
+      if(!state.persist) return; 
+      const key=templateStorageKey(state.appName); 
+      const snap={appName:state.appName, fields:state.fields, records:state.records, ts:Date.now()}; 
+      try{ 
+        localStorage.setItem(key, JSON.stringify(snap)); 
+        console.log('Data saved to localStorage for', state.appName, '- key:', key);
+      }catch(e){
+        console.error('Error saving to localStorage:', e);
+      } 
+    }
+    function loadLocalForTemplate(appName){ 
+      const key=templateStorageKey(appName); 
+      console.log('loadLocalForTemplate called for', appName, '- key:', key);
+      try{ 
+        const raw=localStorage.getItem(key); 
+        const result = raw? JSON.parse(raw): null;
+        console.log('Loaded data for', appName, ':', result ? result.records.length + ' records' : 'no data');
+        return result;
+      }catch(e){ 
+        console.error('Error loading from localStorage:', e);
+        return null; 
+      } 
+    }
     function clearLocalForTemplate(appName){ const key=templateStorageKey(appName||state.appName); try{ localStorage.removeItem(key); }catch(e){} }
     function restoreTemplateSnapshot(snap){ if(!snap) return false; state.appName=snap.appName||state.appName; state.fields=Array.isArray(snap.fields)?snap.fields:state.fields; state.records=Array.isArray(snap.records)?snap.records:[]; deriveFiltered(); renderAll(); return true; }
 
@@ -322,6 +345,8 @@ const state = { appName: lastTemplate, fields: [
           if(!confirm(msg)) return;
           if(state.persist){ saveLocalForTemplate(); }
           state.appName = t.name;
+          // Save the active template to localStorage
+          try{ localStorage.setItem('forgenova_lastTemplate', t.name); }catch(e){}
           state.fields  = t.fields.map(f=>({...f}));
           let restored=false;
           if(state.persist){
@@ -437,7 +462,23 @@ const state = { appName: lastTemplate, fields: [
       else if(app==='Inventory Count'){ $('kpiUniqueKeyLabel').textContent='Locations'; const s=new Set(rows.map(r=>r.location).filter(Boolean)); $('kpiUniqueKey').textContent=s.size||'–'; }
       else if(app==='Safety Audit'){ $('kpiUniqueKeyLabel').textContent='Severities'; const s=new Set(rows.map(r=>r.severity).filter(Boolean)); $('kpiUniqueKey').textContent=s.size||'–'; }
       else { $('kpiUniqueKeyLabel').textContent='Context Metric'; $('kpiUniqueKey').textContent='–'; } }
-    function rebuildCharts(){ if(chartA) chartA.destroy(); if(chartB) chartB.destroy(); const recs=currentRows();
+    function rebuildCharts(){ 
+      if(chartA) chartA.destroy(); 
+      if(chartB) chartB.destroy(); 
+      const recs=currentRows();
+      
+      // Only render charts if there is data
+      if(recs.length === 0) {
+        // Hide chart containers when no data
+        const chartArea = document.getElementById('chartArea');
+        if(chartArea) chartArea.style.display = 'none';
+        return;
+      }
+      
+      // Show chart containers when data exists
+      const chartArea = document.getElementById('chartArea');
+      if(chartArea) chartArea.style.display = 'block';
+      
       const byDate={}; recs.forEach(r=>{ const d=(r.date||'').slice(0,10)||'Unknown'; byDate[d]=(byDate[d]||0)+1; });
       const dLabels=Object.keys(byDate).sort(); const dCounts=dLabels.map(k=>byDate[k]);
       chartA=new Chart(els.chartA,{type:'bar',data:{labels:dLabels,datasets:[{label:'Entries/day',data:dCounts}]},options:{plugins:{legend:{display:false}}}});
@@ -512,12 +553,56 @@ const state = { appName: lastTemplate, fields: [
     $('csvBtn').onclick = ()=> $('csvInput').click();
     $('csvInput').onchange = (e)=>{ const f=e.target.files?.[0]; if(f) importCsv(f); e.target.value=''; };
     $('exportBtn').onclick = exportCsv;
-    $('deleteDataBtn').onclick = ()=>{
+    $('deleteDataBtn').onclick = async ()=>{
       if(confirm(`Delete ALL data for "${state.appName}"? This cannot be undone.`)){
-        state.records=[]; deriveFiltered(); renderAll(); clearLocalForTemplate(); toast('Deleted data for current template'); $('status').textContent='Template data deleted';
+        // Get the table name for the current template
+        const getTableNameForTemplate = (templateName) => {
+          const tableMap = {
+            'Maintenance Log': 'maintenance_log',
+            'Production QC': 'production_qc', 
+            'Inventory Count': 'inventory_count',
+            'Safety Audit': 'safety_audit'
+          };
+          return tableMap[templateName] || 'records';
+        };
+        
+        const tableName = getTableNameForTemplate(state.appName);
+        
+        try {
+          // Delete from Supabase table specific to this template
+          const { error } = await supabaseClient
+            .from(tableName)
+            .delete()
+            .neq('id', 0); // Delete all records (using neq with impossible condition)
+            
+          if (error) {
+            console.error('Error deleting from Supabase:', error);
+            toast('Error deleting data from server');
+          } else {
+            toast('Data deleted from server and locally');
+          }
+        } catch (err) {
+          console.error('Delete operation failed:', err);
+          toast('Error deleting data');
+        }
+        
+        // Clear local data regardless of Supabase result
+        state.records=[]; deriveFiltered(); renderAll(); clearLocalForTemplate(); 
+        $('status').textContent='Template data deleted';
       }
     };
-    $('saveEntry').onclick = (e)=>{ e.preventDefault(); state.records.push(readForm()); deriveFiltered(); renderAll(); $('entryForm').reset(); if(state.persist) saveLocalForTemplate(); };
+    $('saveEntry').onclick = (e)=>{ 
+      e.preventDefault(); 
+      state.records.push(readForm()); 
+      deriveFiltered(); 
+      renderAll(); 
+      $('entryForm').reset(); 
+      if(state.persist) {
+        saveLocalForTemplate();
+        // Immediately notify about the data change
+        console.log('✅ New record added, data saved and UI updated');
+      }
+    };
     $('clearForm').onclick = (e)=>{ e.preventDefault(); $('entryForm').reset(); };
     $('scrollToForm').onclick = ()=> $('saveEntry').scrollIntoView({behavior:'smooth', block:'center'});
     $('filterInput').addEventListener('input', ()=>{ deriveFiltered(); renderAll(); });
@@ -538,10 +623,31 @@ const state = { appName: lastTemplate, fields: [
     });
 
     (function init(){
-      try{ const flag=localStorage.getItem(PERSIST_FLAG_KEY); if(flag==='1'){ state.persist=true; $('persistToggle').checked=true; } }catch(e){}
+      console.log('Initializing app - state.persist:', state.persist);
+      try{ 
+        const flag=localStorage.getItem(PERSIST_FLAG_KEY); 
+        console.log('PERSIST_FLAG_KEY from localStorage:', flag);
+        if(flag==='1'){ 
+          state.persist=true; 
+          $('persistToggle').checked=true; 
+        } else if(flag === null) {
+          // Default to true for new users
+          state.persist=true; 
+          $('persistToggle').checked=true;
+          localStorage.setItem(PERSIST_FLAG_KEY, '1');
+          console.log('Set default persist to true for new user');
+        }
+      }catch(e){
+        console.error('Error in init:', e);
+      }
+      console.log('Final state.persist:', state.persist, 'checkbox checked:', $('persistToggle').checked);
       renderAll();
       if(state.persist){
-        const snap=loadLocalForTemplate(state.appName); if(snap){ restoreTemplateSnapshot(snap); toast(`Restored ${state.records.length} rows for ${state.appName}`); }
+        const snap=loadLocalForTemplate(state.appName); 
+        if(snap){ 
+          restoreTemplateSnapshot(snap); 
+          toast(`Restored ${state.records.length} rows for ${state.appName}`); 
+        }
       }
     })();
   
@@ -682,6 +788,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if(window.chartA) try{ chartA.destroy(); }catch(e){}
     if(window.chartB) try{ chartB.destroy(); }catch(e){}
     const recs = currentRows();
+    
+    // Only render charts if there is data
+    if(recs.length === 0) {
+      const chartArea = document.getElementById('chartArea');
+      if(chartArea) chartArea.style.display = 'none';
+      return;
+    }
+    
+    // Show chart containers when data exists
+    const chartArea = document.getElementById('chartArea');
+    if(chartArea) chartArea.style.display = 'block';
+    
     const app = state.appName;
 
     // Prepare date histogram for Chart A
@@ -813,6 +931,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
     try { if(chartA) chartA.destroy(); } catch(_){}
     try { if(chartB) chartB.destroy(); } catch(_){}
     const recs = currentRows();
+    
+    // Only render charts if there is data
+    if(recs.length === 0) {
+      const chartArea = document.getElementById('chartArea');
+      if(chartArea) chartArea.style.display = 'none';
+      return;
+    }
+    
+    // Show chart containers when data exists
+    const chartArea = document.getElementById('chartArea');
+    if(chartArea) chartArea.style.display = 'block';
+    
     const app = state.appName;
 
     // Date histogram for Chart A
@@ -1394,9 +1524,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   function onTemplateChanged(){
     try {
       const modeSel = document.getElementById('importMode') || (window.els && els.importMode);
-      if(modeSel){ modeSel.value = 'replace'; }
-      // clear current working set (template switch)
-      if(Array.isArray(state.records)){ state.records.length = 0; }
+      if(modeSel){ modeSel.value = 'append'; } // Changed to append to preserve data
+      // Don't clear records - let the persistence system handle it
+      // if(Array.isArray(state.records)){ state.records.length = 0; }
       if (typeof deriveFiltered === 'function') try { deriveFiltered(); } catch(e){}
       if (typeof renderAll === 'function') try { renderAll(); } catch(e){}
     } catch(e){}
@@ -1543,7 +1673,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const cur = (window.state && state.appName) || null;
       if(cur && cur !== __lastApp){
         __lastApp = cur;
-        if (Array.isArray(state.records)) state.records.length = 0; else state.records = [];
+        // Don't clear records - let the persistence system handle template data
+        // if (Array.isArray(state.records)) state.records.length = 0; else state.records = [];
         try { state.filters = {}; } catch(_){}
         // Rebuild UI from scratch
         if (typeof deriveFiltered === 'function') try { deriveFiltered(); } catch(_){}
@@ -1903,11 +2034,39 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.addEventListener('DOMContentLoaded', function(){
     var btn = document.getElementById('deleteDataBtn');
     if(!btn) return;
-    btn.onclick = function(){
+    btn.onclick = async function(){
       if(!window.state || !state.appName) return;
       if(!confirm(`Delete ALL data for "${state.appName}"? This cannot be undone.`)) return;
       ensureState();
       var app = state.appName;
+      
+      // Get the table name for the current template
+      const getTableNameForTemplate = (templateName) => {
+        const tableMap = {
+          'Maintenance Log': 'maintenance_log',
+          'Production QC': 'production_qc', 
+          'Inventory Count': 'inventory_count',
+          'Safety Audit': 'safety_audit'
+        };
+        return tableMap[templateName] || 'records';
+      };
+      
+      const tableName = getTableNameForTemplate(app);
+      
+      try {
+        // Delete from Supabase table specific to this template
+        const { error } = await supabaseClient
+          .from(tableName)
+          .delete()
+          .neq('id', 0); // Delete all records
+          
+        if (error) {
+          console.error('Error deleting from Supabase:', error);
+        }
+      } catch (err) {
+        console.error('Delete operation failed:', err);
+      }
+      
       // clear memory + storage
       state.records = [];
       state.dataByApp[app] = [];
@@ -1942,11 +2101,39 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.addEventListener('DOMContentLoaded', function(){
     var btn = document.getElementById('deleteDataBtn');
     if(btn){
-      btn.onclick = function(){
+      btn.onclick = async function(){
         if(!window.state || !state.appName) return;
         var app = state.appName;
         if(!confirm(`Are you sure you want to delete all data for "${app}"?`)) return;
         ensureState();
+        
+        // Get the table name for the current template
+        const getTableNameForTemplate = (templateName) => {
+          const tableMap = {
+            'Maintenance Log': 'maintenance_log',
+            'Production QC': 'production_qc', 
+            'Inventory Count': 'inventory_count',
+            'Safety Audit': 'safety_audit'
+          };
+          return tableMap[templateName] || 'records';
+        };
+        
+        const tableName = getTableNameForTemplate(app);
+        
+        try {
+          // Delete from Supabase table specific to this template
+          const { error } = await supabaseClient
+            .from(tableName)
+            .delete()
+            .neq('id', 0); // Delete all records
+            
+          if (error) {
+            console.error('Error deleting from Supabase:', error);
+          }
+        } catch (err) {
+          console.error('Delete operation failed:', err);
+        }
+        
         state.records = [];
         state.dataByApp[app] = [];
         clearLocal(app);
@@ -2300,6 +2487,282 @@ if (records && records.length > 0) {
 }
 }
 loadRecords();
+
+// Realtime subscriptions for all templates
+let realtimeSubscriptions = [];
+let reconnectInterval = null;
+let isTabVisible = true;
+
+function setupRealtimeSubscriptions() {
+  console.log('Setting up realtime subscriptions...');
+  
+  // Clean up existing subscriptions
+  realtimeSubscriptions.forEach(subscription => {
+    try {
+      supabaseClient.removeChannel(subscription);
+    } catch(e) {
+      console.warn('Error removing channel:', e);
+    }
+  });
+  realtimeSubscriptions = [];
+
+  // Template to table mapping
+  const templateTables = {
+    'Maintenance Log': 'maintenance_log',
+    'Production QC': 'production_qc', 
+    'Inventory Count': 'inventory_count',
+    'Safety Audit': 'safety_audit'
+  };
+
+  // Create subscriptions for each template table
+  Object.entries(templateTables).forEach(([templateName, tableName]) => {
+    const subscription = supabaseClient
+      .channel(`${tableName}_changes_${Date.now()}`) // Unique channel name
+      .on('postgres_changes', 
+        { 
+          event: '*', // Listen to INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: tableName
+        }, 
+        (payload) => {
+          console.log(`Realtime change in ${tableName}:`, payload);
+          
+          // Only refresh if this is the currently active template and tab is visible
+          if (window.state && state.appName === templateName && isTabVisible) {
+            refreshCurrentTemplateData(templateName);
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log(`Subscription status for ${tableName}:`, status);
+        if (status === 'SUBSCRIBED') {
+          console.log(`✅ Successfully subscribed to ${tableName}`);
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error(`❌ Error subscribing to ${tableName}`);
+          // Retry subscription after a delay
+          setTimeout(() => setupRealtimeSubscriptions(), 5000);
+        }
+      });
+      
+    realtimeSubscriptions.push(subscription);
+  });
+}
+
+async function refreshCurrentTemplateData(templateName) {
+  if (!window.state || !templateName) return;
+  
+  console.log(`Refreshing data for ${templateName}...`);
+  
+  try {
+    // For now, let's use a simpler approach - just reload from localStorage
+    // and trigger a UI refresh to simulate real-time updates
+    const snap = loadLocalForTemplate(templateName);
+    if (snap && snap.records) {
+      console.log(`Found ${snap.records.length} records in localStorage for ${templateName}`);
+      
+      // Only update if this is still the active template
+      if (state.appName === templateName) {
+        state.records = snap.records;
+        
+        // Refresh the UI
+        if (typeof deriveFiltered === 'function') deriveFiltered();
+        if (typeof renderAll === 'function') renderAll();
+        if (typeof rebuildKpis === 'function') rebuildKpis();
+        if (typeof rebuildCharts === 'function') rebuildCharts();
+        
+        console.log(`✅ Refreshed ${templateName} with ${snap.records.length} records`);
+      }
+    } else {
+      console.log(`No stored data found for ${templateName}`);
+    }
+  } catch (err) {
+    console.error(`Error refreshing ${templateName} data:`, err);
+  }
+}
+
+// Enhanced function to sync data across browser tabs/windows
+function syncDataAcrossWindows() {
+  // Listen for localStorage changes from other tabs
+  window.addEventListener('storage', (e) => {
+    if (e.key && e.key.startsWith('forgenova_mvp_template_')) {
+      console.log('Storage change detected:', e.key);
+      
+      // Extract template name from storage key
+      const templateName = Object.keys({
+        'Maintenance Log': 'maintenance_log',
+        'Production QC': 'production_qc', 
+        'Inventory Count': 'inventory_count',
+        'Safety Audit': 'safety_audit'
+      }).find(name => e.key.includes(slug(name)));
+      
+      if (templateName && state.appName === templateName) {
+        console.log(`Data changed for active template ${templateName}, refreshing...`);
+        refreshCurrentTemplateData(templateName);
+      }
+    }
+  });
+}
+
+// Improved save function that triggers cross-tab updates
+const originalSaveLocalForTemplate = saveLocalForTemplate;
+saveLocalForTemplate = function() {
+  originalSaveLocalForTemplate();
+  
+  // Trigger a custom event to notify other parts of the app
+  window.dispatchEvent(new CustomEvent('templateDataSaved', {
+    detail: { templateName: state.appName, recordCount: state.records.length }
+  }));
+  
+  // Also trigger a timestamp update to help with cross-tab sync
+  try {
+    localStorage.setItem('forgenova_last_update', Date.now().toString());
+    localStorage.setItem('forgenova_last_template', state.appName);
+  } catch(e) {}
+};
+
+// Enhanced cross-tab synchronization
+let lastKnownUpdate = 0;
+let syncCheckInterval = null;
+
+function startCrossTabSync() {
+  // Check for updates every 2 seconds
+  syncCheckInterval = setInterval(() => {
+    if (!isTabVisible) return; // Only sync when tab is visible
+    
+    try {
+      const lastUpdate = parseInt(localStorage.getItem('forgenova_last_update') || '0');
+      const lastTemplate = localStorage.getItem('forgenova_last_template');
+      
+      if (lastUpdate > lastKnownUpdate && lastTemplate === state.appName) {
+        console.log('🔄 Cross-tab update detected, refreshing data...');
+        lastKnownUpdate = lastUpdate;
+        refreshCurrentTemplateData(state.appName);
+      }
+    } catch(e) {
+      console.warn('Error in cross-tab sync:', e);
+    }
+  }, 2000);
+}
+
+function stopCrossTabSync() {
+  if (syncCheckInterval) {
+    clearInterval(syncCheckInterval);
+    syncCheckInterval = null;
+  }
+}
+
+// Handle tab visibility changes
+document.addEventListener('visibilitychange', () => {
+  isTabVisible = !document.hidden;
+  console.log('Tab visibility changed:', isTabVisible ? 'visible' : 'hidden');
+  
+  if (isTabVisible) {
+    // Tab became visible - refresh current template data and start sync
+    console.log('Tab became visible - refreshing data and starting sync...');
+    if (window.state && state.appName) {
+      refreshCurrentTemplateData(state.appName);
+    }
+    startCrossTabSync();
+    // Reconnect subscriptions after a short delay
+    setTimeout(setupRealtimeSubscriptions, 1000);
+  } else {
+    // Tab became hidden - stop unnecessary sync checks
+    stopCrossTabSync();
+  }
+});
+
+// Handle page focus/blur events as backup
+window.addEventListener('focus', () => {
+  console.log('Window focused - ensuring realtime connections');
+  isTabVisible = true;
+  if (window.state && state.appName) {
+    refreshCurrentTemplateData(state.appName);
+  }
+  startCrossTabSync();
+  setTimeout(setupRealtimeSubscriptions, 500);
+});
+
+window.addEventListener('blur', () => {
+  console.log('Window blurred');
+  isTabVisible = false;
+  stopCrossTabSync();
+});
+
+// Initialize realtime subscriptions when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+  // Initialize cross-tab data synchronization
+  syncDataAcrossWindows();
+  
+  // Start the cross-tab sync system
+  startCrossTabSync();
+  
+  // Initialize last known update timestamp
+  try {
+    lastKnownUpdate = parseInt(localStorage.getItem('forgenova_last_update') || '0');
+  } catch(e) {}
+  
+  // Small delay to ensure Supabase client is ready
+  setTimeout(setupRealtimeSubscriptions, 1000);
+  
+  console.log('🚀 Real-time data synchronization system initialized');
+});
+
+// Periodic health check and reconnection
+setInterval(() => {
+  if (isTabVisible) {
+    // Check if subscriptions are still active
+    const activeSubscriptions = realtimeSubscriptions.filter(sub => 
+      sub && sub.state === 'joined'
+    );
+    
+    if (activeSubscriptions.length < 4) { // Should have 4 subscriptions (one per template)
+      console.log('Some subscriptions inactive, reconnecting...', 
+        `Active: ${activeSubscriptions.length}/4`);
+      setupRealtimeSubscriptions();
+    }
+  }
+}, 15000); // Check every 15 seconds
+
+// Enhanced template switching with immediate data refresh
+function enhanceTemplateSwitching() {
+  // Hook into the template click handler in the renderTemplates function
+  const originalRenderTemplates = renderTemplates;
+  renderTemplates = function() {
+    originalRenderTemplates();
+    
+    // Re-attach enhanced click handlers
+    document.querySelectorAll('.template').forEach(templateDiv => {
+      const originalClick = templateDiv.onclick;
+      templateDiv.onclick = function() {
+        const templateName = this.querySelector('strong')?.textContent?.trim();
+        console.log(`🔄 Template switching to: ${templateName}`);
+        
+        // Call original click handler
+        if (originalClick) originalClick.call(this);
+        
+        // Immediate data refresh for the new template
+        setTimeout(() => {
+          if (window.state && state.appName === templateName) {
+            console.log(`📊 Refreshing data for ${templateName}`);
+            refreshCurrentTemplateData(templateName);
+            
+            // Update the sync timestamp
+            try {
+              lastKnownUpdate = Date.now();
+              localStorage.setItem('forgenova_last_update', lastKnownUpdate.toString());
+            } catch(e) {}
+          }
+        }, 100);
+      };
+    });
+  };
+}
+
+// Initialize template switching enhancement
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(enhanceTemplateSwitching, 500);
+});
+
 </script>
 </body>
 </html>
