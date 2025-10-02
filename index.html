@@ -216,16 +216,7 @@ let lastTemplate = (() => {
 })();
 
 
-const state = { appName: lastTemplate, fields: [
-      {label:'Machine ID', key:'machine_id', type:'text', required:true},
-      {label:'Date',       key:'date',       type:'date', required:true},
-      {label:'Shift',      key:'shift',      type:'select', options:['A','B','C']},
-      {label:'Downtime (min)', key:'downtime_min', type:'number'},
-      {label:'Reason',     key:'reason',     type:'select', options:['Electrical','Mechanical','Operator','Planned','Other']},
-      {label:'Notes',      key:'notes',      type:'textarea'}
-    ], records: [], filtered: [], persist: true };
-
-    const PERSIST_FLAG_KEY = 'forgenova_mvp_persist_on';
+const PERSIST_FLAG_KEY = 'forgenova_mvp_persist_on';
 
     const TEMPLATES = [
       { name:'Maintenance Log', badge:'Operations', desc:'Track downtime by machine, shift, and reason.',
@@ -238,14 +229,19 @@ const state = { appName: lastTemplate, fields: [
           {label:'Notes', key:'notes', type:'textarea'}
         ]
       },
-      { name:'Production QC', badge:'Quality', desc:'Log batch-level inspections and defects.',
+      { name:'Production QC', badge:'Quality', desc:'Log batch-level inspections and defect analysis.',
         fields:[
           {label:'Batch ID', key:'batch_id', type:'text', required:true},
           {label:'Date', key:'date', type:'date', required:true},
+          {label:'Shift', key:'shift', type:'select', options:['A','B','C']},
           {label:'Inspector', key:'inspector', type:'text'},
-          {label:'Defects', key:'defects', type:'number'},
-          {label:'Passed', key:'passed', type:'checkbox'},
-          {label:'Notes', key:'notes', type:'textarea'}
+          {label:'Units Sampled', key:'units_sampled', type:'number', required:true},
+          {label:'Defects Total', key:'defects_total', type:'number'},
+          {label:'Top Defect Type', key:'top_defect_type', type:'text'},
+          {label:'Status', key:'status', type:'select', options:['Pass','Fail','Rework','Hold']},
+          {label:'Rework Required', key:'rework_required', type:'checkbox'},
+          {label:'Notes', key:'notes', type:'textarea'},
+          {label:'Defect Rate %', key:'defect_rate_pct', type:'number', readonly:true}
         ]
       },
       { name:'Inventory Count', badge:'Inventory', desc:'Cycle counts with reorder thresholds.',
@@ -257,17 +253,34 @@ const state = { appName: lastTemplate, fields: [
           {label:'Date', key:'date', type:'date'}
         ]
       },
-      { name:'Safety Audit', badge:'EHS', desc:'Track findings, severity, and resolution.',
+      { name:'Safety Audit', badge:'EHS', desc:'Track audit findings and corrective actions.',
         fields:[
-          {label:'Area', key:'area', type:'text', required:true},
-          {label:'Inspection Date', key:'date', type:'date', required:true},
-          {label:'Issues Found', key:'issues', type:'number'},
-          {label:'Severity', key:'severity', type:'select', options:['Low','Medium','High']},
-          {label:'Resolved', key:'resolved', type:'checkbox'},
+          {label:'Audit ID', key:'audit_id', type:'text', required:true},
+          {label:'Date', key:'date', type:'date', required:true},
+          {label:'Area', key:'area', type:'text'},
+          {label:'Auditor', key:'auditor', type:'text'},
+          {label:'Findings Count', key:'findings_count', type:'number'},
+          {label:'Highest Severity', key:'highest_severity', type:'select', options:['Low','Medium','High','Critical']},
+          {label:'Corrective Actions Required', key:'corrective_actions_required', type:'number'},
+          {label:'Status', key:'status', type:'select', options:['Open','In Progress','Completed','Closed']},
           {label:'Notes', key:'notes', type:'textarea'}
         ]
       }
     ];
+
+    // Initialize state with correct template fields based on lastTemplate
+    const getTemplateFields = (templateName) => {
+      const template = TEMPLATES.find(t => t.name === templateName);
+      return template ? template.fields.map(f => ({...f})) : TEMPLATES[0].fields.map(f => ({...f}));
+    };
+
+    const state = { 
+      appName: lastTemplate, 
+      fields: getTemplateFields(lastTemplate), 
+      records: [], 
+      filtered: [], 
+      persist: true 
+    };
 
     const $ = (id)=>document.getElementById(id);
     function slug(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,''); }
@@ -666,9 +679,9 @@ const state = { appName: lastTemplate, fields: [
       chartA=new Chart(els.chartA,{type:'bar',data:{labels:dLabels,datasets:[{label:'Entries/day',data:dCounts}]},options:{plugins:{legend:{display:false}}}});
       const app=state.appName;
       if(app==='Maintenance Log'){ const byShift={}; recs.forEach(r=>{ const s=r.shift||'Unknown'; byShift[s]=(byShift[s]||0)+1; }); chartB=new Chart(els.chartB,{type:'bar',data:{labels:Object.keys(byShift),datasets:[{label:'Events by shift',data:Object.values(byShift)}]},options:{plugins:{legend:{display:false}}}}); }
-      else if(app==='Production QC'){ let pass=0,fail=0; recs.forEach(r=>{ (r.passed===true || String(r.passed)==='true' || String(r.passed).toLowerCase()==='yes')?pass++:fail++; }); chartB=new Chart(els.chartB,{type:'pie',data:{labels:['Pass','Fail'],datasets:[{data:[pass,fail]}]}}); }
+      else if(app==='Production QC'){ const byStatus={}; recs.forEach(r=>{ const s=r.status||'Unknown'; byStatus[s]=(byStatus[s]||0)+1; }); chartB=new Chart(els.chartB,{type:'pie',data:{labels:Object.keys(byStatus),datasets:[{data:Object.values(byStatus)}]}}); }
       else if(app==='Inventory Count'){ const byLoc={}; recs.forEach(r=>{ const loc=r.location||'Unknown'; byLoc[loc]=(byLoc[loc]||0)+1; }); chartB=new Chart(els.chartB,{type:'bar',data:{labels:Object.keys(byLoc),datasets:[{label:'Counts logged',data:Object.values(byLoc)}]},options:{plugins:{legend:{display:false}}}}); }
-      else if(app==='Safety Audit'){ const sev={Low:0,Medium:0,High:0}; recs.forEach(r=>{ const k=r.severity||'Low'; sev[k]=(sev[k]||0)+1; }); chartB=new Chart(els.chartB,{type:'bar',data:{labels:Object.keys(sev),datasets:[{label:'Findings',data:Object.values(sev)}]},options:{plugins:{legend:{display:false}}}}); }
+      else if(app==='Safety Audit'){ const sev={Low:0,Medium:0,High:0,Critical:0}; recs.forEach(r=>{ const k=r.highest_severity||'Low'; if(sev[k]!==undefined) sev[k]++; }); chartB=new Chart(els.chartB,{type:'bar',data:{labels:Object.keys(sev),datasets:[{label:'Findings by Severity',data:Object.values(sev)}]},options:{plugins:{legend:{display:false}}}}); }
       else { chartB=new Chart(els.chartB,{type:'bar',data:{labels:[],datasets:[{data:[]}]}}); } }
 
     function importCsv(file){
@@ -812,14 +825,27 @@ const state = { appName: lastTemplate, fields: [
         // Clear local data regardless of Supabase result
         state.records=[]; 
         state.filtered=[];
+        
+        // Also clear from state.dataByApp to prevent reappearance
+        if(state.dataByApp && state.dataByApp[state.appName]) {
+          state.dataByApp[state.appName] = [];
+        }
+        
+        // Clear from localStorage
         clearLocalForTemplate(state.appName); // Pass the template name explicitly
+        
+        // Refresh all UI components
         deriveFiltered(); 
         renderAll(); 
         rebuildKpis(); 
         rebuildCharts();
+        
         toast('All data deleted for ' + state.appName);
         $('status').textContent='Template data deleted';
         console.log('✅ Deleted all data for template:', state.appName);
+        console.log('  - Cleared state.records');
+        console.log('  - Cleared state.dataByApp[' + state.appName + ']');
+        console.log('  - Cleared localStorage');
       }
     };
     $('saveEntry').onclick = (e)=>{ 
