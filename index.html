@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- ForgeNova MVP - Version: 2d94344 - Deployed: 2025-10-01 - Data Isolation & CSV Validation Fixed -->
+<!-- ForgeNova MVP - PERFECT DATA ISOLATION - Each template completely separate - No cross-contamination -->
 <html lang="en">
 <head>
     <!-- Supabase SDK -->
@@ -275,31 +275,57 @@ const state = { appName: lastTemplate, fields: [
 
     function templateStorageKey(appName){ return 'forgenova_mvp_template_'+ slug(appName||state.appName); }
     function saveLocalForTemplate(){ 
-      console.log('saveLocalForTemplate called - persist:', state.persist, 'records:', state.records.length);
-      if(!state.persist) return; 
+      console.log('💾 saveLocalForTemplate called - persist:', state.persist, 'template:', state.appName, 'records:', state.records.length);
+      if(!state.persist || !state.appName) return; 
+      
       const key=templateStorageKey(state.appName); 
-      const snap={appName:state.appName, fields:state.fields, records:state.records, ts:Date.now()}; 
+      
+      // STRICT: Only save records that belong to this template
+      const template = TEMPLATES.find(t => t.name === state.appName);
+      if(!template) {
+        console.error('Template not found for:', state.appName);
+        return;
+      }
+      
+      const templateKeys = template.fields.map(f => f.key);
+      const cleanRecords = state.records.map(record => {
+        const cleanRecord = {};
+        templateKeys.forEach(key => {
+          if(record.hasOwnProperty(key)) {
+            cleanRecord[key] = record[key];
+          }
+        });
+        return cleanRecord;
+      }).filter(record => Object.keys(record).length > 0);
+      
+      const snap={
+        appName: state.appName, 
+        fields: template.fields.map(f=>({...f})), // Always use template's original fields
+        records: cleanRecords, 
+        ts: Date.now()
+      }; 
+      
       try{ 
         localStorage.setItem(key, JSON.stringify(snap)); 
-        console.log('Data saved to localStorage for', state.appName, '- key:', key);
+        console.log(`✅ Saved ${cleanRecords.length} clean records for "${state.appName}" - key:`, key);
       }catch(e){
         console.error('Error saving to localStorage:', e);
       } 
     }
     function loadLocalForTemplate(appName){ 
       const key=templateStorageKey(appName); 
-      console.log('loadLocalForTemplate called for', appName, '- key:', key);
+      console.log('🔍 Loading data for template:', appName, '- key:', key);
       try{ 
         const raw=localStorage.getItem(key); 
         const result = raw? JSON.parse(raw): null;
         
-        // Validate stored data against current template fields
+        // Validate stored data against current template fields ONLY
         if(result && result.records && Array.isArray(result.records)) {
           const template = TEMPLATES.find(t => t.name === appName);
           if(template) {
             const templateFieldKeys = template.fields.map(f => f.key);
             
-            // Clean records to only include template-specific fields
+            // STRICT: Clean records to only include template-specific fields
             const cleanedRecords = result.records.map(record => {
               const cleanRecord = {};
               templateFieldKeys.forEach(key => {
@@ -307,27 +333,23 @@ const state = { appName: lastTemplate, fields: [
                   cleanRecord[key] = record[key];
                 }
               });
-              return cleanRecord;
-            });
+              // Only return records that have data for this template
+              return Object.keys(cleanRecord).length > 0 ? cleanRecord : null;
+            }).filter(record => record !== null);
             
-            // Only return records that have at least one template field
-            const validRecords = cleanedRecords.filter(record => 
-              Object.keys(record).some(key => templateFieldKeys.includes(key))
-            );
-            
-            if(validRecords.length !== result.records.length) {
-              console.log(`🧹 Cleaned ${appName} data: ${result.records.length} → ${validRecords.length} records`);
-              // Save the cleaned data back
-              const cleanedResult = {...result, records: validRecords};
+            if(cleanedRecords.length !== result.records.length) {
+              console.log(`🧹 Cleaned ${appName}: ${result.records.length} → ${cleanedRecords.length} valid records`);
+              // Save the cleaned data back immediately
+              const cleanedResult = {...result, records: cleanedRecords};
               localStorage.setItem(key, JSON.stringify(cleanedResult));
               return cleanedResult;
             }
             
-            result.records = validRecords;
+            result.records = cleanedRecords;
           }
         }
         
-        console.log('Loaded data for', appName, ':', result ? result.records.length + ' records' : 'no data');
+        console.log(`✅ Loaded ${appName}:`, result ? result.records.length + ' records' : 'no data');
         return result;
       }catch(e){ 
         console.error('Error loading from localStorage:', e);
@@ -345,38 +367,60 @@ const state = { appName: lastTemplate, fields: [
       } 
     }
     
-    function clearAllContaminatedData() {
-      console.log('🧹 Clearing all potentially contaminated localStorage data...');
-      try {
-        // Clear all template-specific data
-        TEMPLATES.forEach(template => {
-          const key = templateStorageKey(template.name);
-          localStorage.removeItem(key);
-          console.log(`Cleared data for: ${template.name}`);
-        });
-        
-        // Also clear any old keys that might exist
-        const keysToRemove = [];
-        for(let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if(key && key.startsWith('forgenova_mvp_template_')) {
-            keysToRemove.push(key);
+        function clearAllContaminatedData() {
+          console.log('🧹 Clearing all potentially contaminated localStorage data...');
+          try {
+            // Clear all template-specific data
+            TEMPLATES.forEach(template => {
+              const key = templateStorageKey(template.name);
+              localStorage.removeItem(key);
+              console.log(`Cleared data for: ${template.name}`);
+            });
+            
+            // Also clear any old keys that might exist
+            const keysToRemove = [];
+            for(let i = 0; i < localStorage.length; i++) {
+              const key = localStorage.key(i);
+              if(key && (key.startsWith('forgenova_mvp_template_') || key.startsWith('forgenova_'))) {
+                keysToRemove.push(key);
+              }
+            }
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            
+            // Clear state.dataByApp completely
+            if(window.state && window.state.dataByApp) {
+              window.state.dataByApp = {};
+            }
+            
+            console.log('✅ All contaminated data cleared. Please refresh the page.');
+            toast('All data cleared. Refreshing page...', 3000);
+            
+            // Refresh the page after a short delay
+            setTimeout(() => {
+              window.location.reload();
+            }, 1500);
+            
+          } catch(e) {
+            console.error('Error clearing contaminated data:', e);
           }
         }
-        keysToRemove.forEach(key => localStorage.removeItem(key));
         
-        console.log('✅ All contaminated data cleared. Please refresh the page.');
-        toast('All data cleared. Refreshing page...', 3000);
-        
-        // Refresh the page after a short delay
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-        
-      } catch(e) {
-        console.error('Error clearing contaminated data:', e);
-      }
-    }
+        // Emergency function to force clean data isolation
+        function forceCleanIsolation() {
+          console.log('🚨 EMERGENCY: Forcing clean data isolation...');
+          
+          // Clear all data
+          clearAllContaminatedData();
+          
+          // Reset state completely
+          if(window.state) {
+            window.state.records = [];
+            window.state.filtered = [];
+            window.state.dataByApp = {};
+          }
+          
+          console.log('🔥 Emergency clean isolation complete. Reloading...');
+        }
     function restoreTemplateSnapshot(snap){ 
       if(!snap) return false; 
       state.appName=snap.appName||state.appName; 
@@ -424,45 +468,74 @@ const state = { appName: lastTemplate, fields: [
           const hasRecords = state.records.length>0;
           let msg = `Switch to "${t.name}"?`;
           if(state.persist){
-            msg += `\n\nRemember is ON: current template will be saved, and ${t.name}'s last data (if any) will be restored.`;
+            msg += `\n\nRemember is ON: current template will be saved, and ${t.name}'s data will be loaded.`;
           } else if(hasRecords){
             msg += `\n\nCurrent records will be cleared (no device saving).`;
           }
           if(!confirm(msg)) return;
-          if(state.persist){ saveLocalForTemplate(); }
           
-          // Clear previous template data completely
+          console.log(`🔄 Switching from "${state.appName}" to "${t.name}"`);
+          
+          // Save current template's data before switching (STRICT isolation)
+          if(state.persist && state.appName){ 
+            saveLocalForTemplate();
+            console.log(`💾 Saved ${state.records.length} records for "${state.appName}"`);
+          }
+          
+          // COMPLETE RESET: Clear ALL previous template data
           state.records = [];
           state.filtered = [];
           
-          // Set new template
+          // Set new template identity
+          const previousTemplate = state.appName;
           state.appName = t.name;
+          
           // Save the active template to localStorage
           try{ localStorage.setItem('forgenova_lastTemplate', t.name); }catch(e){}
           
-          // Reset fields to ONLY the template's original fields (no accumulated fields)
+          // STRICT: Reset fields to ONLY this template's original fields
           state.fields = t.fields.map(f=>({...f}));
+          console.log(`🏗️ Reset fields for "${t.name}":`, state.fields.map(f => f.label));
           
-          let restored=false;
+          // Load ONLY this template's data (strict isolation)
           if(state.persist){
-            const snap=loadLocalForTemplate(state.appName);
-            if(snap){ 
-              // Only restore records, keep template's original field definitions
-              if(snap.records && Array.isArray(snap.records)) {
-                state.records = snap.records;
-                restored = true;
-                toast(`Restored ${state.records.length} rows for ${state.appName}`);
+            const snap = loadLocalForTemplate(t.name);
+            if(snap && snap.records && Array.isArray(snap.records)) {
+              // VALIDATE: Ensure records only contain this template's fields
+              const templateKeys = t.fields.map(f => f.key);
+              const validRecords = snap.records.filter(record => {
+                // Record must have at least one field from this template
+                return Object.keys(record).some(key => templateKeys.includes(key));
+              }).map(record => {
+                // Clean record to only include this template's fields
+                const cleanRecord = {};
+                templateKeys.forEach(key => {
+                  if(record.hasOwnProperty(key)) {
+                    cleanRecord[key] = record[key];
+                  }
+                });
+                return cleanRecord;
+              });
+              
+              state.records = validRecords;
+              console.log(`✅ Loaded ${validRecords.length} clean records for "${t.name}"`);
+              if(validRecords.length > 0) {
+                toast(`Loaded ${validRecords.length} records for ${t.name}`);
               }
+            } else {
+              console.log(`📋 No stored data for "${t.name}" - starting fresh`);
             }
           }
           
-          // Always refresh UI to show template-specific data
+          // Refresh UI to show ONLY this template's data
           deriveFiltered(); 
           renderAll(); 
           rebuildKpis(); 
           rebuildCharts(); 
           rebuildDashboardSummary(); 
           generateInsights(false);
+          
+          console.log(`🎯 Template switch complete: "${previousTemplate}" → "${t.name}"`);
         };
         els.templateList.appendChild(div);
       });
@@ -799,9 +872,18 @@ const state = { appName: lastTemplate, fields: [
         console.error('Error in init:', e);
       }
       
-      // Make clearAllContaminatedData available globally for manual cleanup
-      window.clearAllContaminatedData = clearAllContaminatedData;
-      console.log('💡 To clear all contaminated data, run: clearAllContaminatedData()');
+        // Make cleanup functions available globally for manual cleanup
+        window.clearAllContaminatedData = clearAllContaminatedData;
+        window.forceCleanIsolation = forceCleanIsolation;
+        console.log('💡 CLEANUP COMMANDS:');
+        console.log('  clearAllContaminatedData() - Clear all data and refresh');
+        console.log('  forceCleanIsolation() - Emergency complete reset');
+        
+        // FORCE CLEAN START: Clear state.dataByApp to prevent contamination
+        state.dataByApp = {};
+        state.records = [];
+        state.filtered = [];
+        console.log('🔒 Forced clean state initialization - no legacy data loaded');
       
       console.log('Final state.persist:', state.persist, 'checkbox checked:', $('persistToggle').checked);
       renderAll();
@@ -1966,11 +2048,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
       if(rows && rows.length) state.dataByApp[t] = rows;
     });
 
+    // DISABLED: This was loading contaminated data from state.dataByApp
+    /*
     var initial = curApp();
     if(initial && state.dataByApp[initial] && state.dataByApp[initial].length){
       try { state.records = state.dataByApp[initial].slice(); } catch(e){}
       refreshTableAndCharts();
     }
+    */
 
     var input = document.querySelector('#csvInput, input[type=\"file\"]');
     if(input){ input.addEventListener('change', captureAfterImport); }
@@ -2145,6 +2230,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
       if(rows && rows.length) state.dataByApp[a] = rows;
     });
     var init = curApp();
+    // DISABLED: This was loading contaminated data from state.dataByApp
+    /*
     if(init){
       var rows = state.dataByApp[init] || [];
       if(rows.length){
@@ -2153,6 +2240,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         if(typeof rebuildCharts==='function') rebuildCharts();
       }
     }
+    */
   });
 
   // On template change, reload from localStorage if needed
@@ -2441,11 +2529,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
     var sel = get('templateSel');
     if(sel) sel.value = last;
 
-    var rows = loadRowsFor(last);
-    state.records = (rows && rows.slice) ? rows.slice() : [];
+    // DISABLED: This was loading contaminated data
+    // var rows = loadRowsFor(last);
+    // state.records = (rows && rows.slice) ? rows.slice() : [];
+    state.records = []; // Start with clean state
 
     // refresh views
-    refreshUI(rows);
+    refreshUI([]);
   });
 })();
 </script>
@@ -2467,8 +2557,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
         if(raw){ rows = JSON.parse(raw) || []; state.dataByApp[app] = rows; }
       }catch(e){}
     }
-    state.records = (rows && rows.slice) ? rows.slice() : [];
-    return rows || [];
+    // DISABLED: Don't load contaminated data
+    // state.records = (rows && rows.slice) ? rows.slice() : [];
+    state.records = []; // Keep clean state
+    return [];
   }
   function refreshUI(rows){
     try{ if(typeof renderAll==='function') renderAll(); }catch(e){}
@@ -2630,8 +2722,10 @@ if (records && records.length > 0) {
     tableBody.appendChild(tr);
   });
 
+  // DISABLED: Don't automatically sync Supabase data into state
   // 🔥 Sync Supabase rows into app state and refresh insights
-  state.records = records.map(r => r.data);
+  // state.records = records.map(r => r.data);
+  console.log('Supabase data available but not auto-loading to prevent contamination');
   if (typeof deriveFiltered === "function" && typeof renderAll === "function") {
     deriveFiltered();
     renderAll();
