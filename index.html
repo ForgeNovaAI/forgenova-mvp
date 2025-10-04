@@ -216,7 +216,16 @@ let lastTemplate = (() => {
 })();
 
 
-const PERSIST_FLAG_KEY = 'forgenova_mvp_persist_on';
+const state = { appName: lastTemplate, fields: [
+      {label:'Machine ID', key:'machine_id', type:'text', required:true},
+      {label:'Date',       key:'date',       type:'date', required:true},
+      {label:'Shift',      key:'shift',      type:'select', options:['A','B','C']},
+      {label:'Downtime (min)', key:'downtime_min', type:'number'},
+      {label:'Reason',     key:'reason',     type:'select', options:['Electrical','Mechanical','Operator','Planned','Other']},
+      {label:'Notes',      key:'notes',      type:'textarea'}
+    ], records: [], filtered: [], persist: true };
+
+    const PERSIST_FLAG_KEY = 'forgenova_mvp_persist_on';
 
     const TEMPLATES = [
       { name:'Maintenance Log', badge:'Operations', desc:'Track downtime by machine, shift, and reason.',
@@ -229,58 +238,43 @@ const PERSIST_FLAG_KEY = 'forgenova_mvp_persist_on';
           {label:'Notes', key:'notes', type:'textarea'}
         ]
       },
-      { name:'Production QC', badge:'Quality', desc:'Log batch-level inspections and defect analysis.',
+      { name:'Production QC', badge:'Quality', desc:'Log batch-level inspections and defects.',
         fields:[
           {label:'Batch ID', key:'batch_id', type:'text', required:true},
           {label:'Date', key:'date', type:'date', required:true},
-          {label:'Shift', key:'shift', type:'select', options:['A','B','C']},
           {label:'Inspector', key:'inspector', type:'text'},
-          {label:'Units Sampled', key:'units_sampled', type:'number', required:true},
-          {label:'Defects Total', key:'defects_total', type:'number'},
-          {label:'Top Defect Type', key:'top_defect_type', type:'text'},
-          {label:'Status', key:'status', type:'select', options:['Pass','Fail','Rework','Hold']},
-          {label:'Rework Required', key:'rework_required', type:'checkbox'},
-          {label:'Notes', key:'notes', type:'textarea'},
-          {label:'Defect Rate %', key:'defect_rate_pct', type:'number', readonly:true}
+          {label:'Defects', key:'defects', type:'number'},
+          {label:'Passed', key:'passed', type:'checkbox'},
+          {label:'Notes', key:'notes', type:'textarea'}
         ]
       },
-      { name:'Inventory Count', badge:'Inventory', desc:'Cycle counts with reorder thresholds.',
+      { name:'Inventory Count', badge:'Inventory', desc:'Cycle counts with variance analysis.',
         fields:[
-          {label:'Item SKU', key:'sku', type:'text', required:true},
+          {label:'Item ID', key:'item_id', type:'text', required:true},
+          {label:'Item Name', key:'item_name', type:'text'},
+          {label:'Category', key:'category', type:'text'},
           {label:'Location', key:'location', type:'text'},
-          {label:'Count', key:'count', type:'number'},
-          {label:'Reorder Point', key:'reorder_point', type:'number'},
-          {label:'Date', key:'date', type:'date'}
+          {label:'Date', key:'date', type:'date', required:true},
+          {label:'Counted Qty', key:'counted_qty', type:'number', required:true},
+          {label:'System Qty', key:'system_qty', type:'number'},
+          {label:'Variance', key:'variance', type:'number'},
+          {label:'Unit Cost', key:'unit_cost', type:'number'},
+          {label:'Counter Name', key:'counter_name', type:'text'},
+          {label:'Notes', key:'notes', type:'textarea'},
+          {label:'Variance Value', key:'variance_value', type:'number'}
         ]
       },
-      { name:'Safety Audit', badge:'EHS', desc:'Track audit findings and corrective actions.',
+      { name:'Safety Audit', badge:'EHS', desc:'Track findings, severity, and resolution.',
         fields:[
-          {label:'Audit ID', key:'audit_id', type:'text', required:true},
-          {label:'Date', key:'date', type:'date', required:true},
-          {label:'Area', key:'area', type:'text'},
-          {label:'Auditor', key:'auditor', type:'text'},
-          {label:'Findings Count', key:'findings_count', type:'number'},
-          {label:'Highest Severity', key:'highest_severity', type:'select', options:['Low','Medium','High','Critical']},
-          {label:'Corrective Actions Required', key:'corrective_actions_required', type:'number'},
-          {label:'Status', key:'status', type:'select', options:['Open','In Progress','Completed','Closed']},
+          {label:'Area', key:'area', type:'text', required:true},
+          {label:'Inspection Date', key:'date', type:'date', required:true},
+          {label:'Issues Found', key:'issues', type:'number'},
+          {label:'Severity', key:'severity', type:'select', options:['Low','Medium','High']},
+          {label:'Resolved', key:'resolved', type:'checkbox'},
           {label:'Notes', key:'notes', type:'textarea'}
         ]
       }
     ];
-
-    // Initialize state with correct template fields based on lastTemplate
-    const getTemplateFields = (templateName) => {
-      const template = TEMPLATES.find(t => t.name === templateName);
-      return template ? template.fields.map(f => ({...f})) : TEMPLATES[0].fields.map(f => ({...f}));
-    };
-
-    const state = { 
-      appName: lastTemplate, 
-      fields: getTemplateFields(lastTemplate), 
-      records: [], 
-      filtered: [], 
-      persist: true 
-    };
 
     const $ = (id)=>document.getElementById(id);
     function slug(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,''); }
@@ -655,7 +649,7 @@ const PERSIST_FLAG_KEY = 'forgenova_mvp_persist_on';
       if(app==='Maintenance Log'){ $('kpiUniqueKeyLabel').textContent='Unique Machines'; const s=new Set(rows.map(r=>r.machine_id).filter(Boolean)); $('kpiUniqueKey').textContent=s.size||'–'; }
       else if(app==='Production QC'){ $('kpiUniqueKeyLabel').textContent='Pass Rate'; const total=rows.length||1; const pass=rows.filter(r=> r.passed===true || String(r.passed)==='true' || String(r.passed).toLowerCase()==='yes').length; const rate=Math.round((pass/total)*100); $('kpiUniqueKey').textContent=isNaN(rate)?'–':(rate+'%'); }
       else if(app==='Inventory Count'){ $('kpiUniqueKeyLabel').textContent='Locations'; const s=new Set(rows.map(r=>r.location).filter(Boolean)); $('kpiUniqueKey').textContent=s.size||'–'; }
-      else if(app==='Safety Audit'){ $('kpiUniqueKeyLabel').textContent='Severities'; const s=new Set(rows.map(r=>r.severity).filter(Boolean)); $('kpiUniqueKey').textContent=s.size||'–'; }
+      else if(app==='Safety Audit'){ $('kpiUniqueKeyLabel').textContent='Severities'; const s=new Set(rows.map(r=>r.highest_severity).filter(Boolean)); $('kpiUniqueKey').textContent=s.size||'–'; }
       else { $('kpiUniqueKeyLabel').textContent='Context Metric'; $('kpiUniqueKey').textContent='–'; } }
     function rebuildCharts(){ 
       if(chartA) chartA.destroy(); 
@@ -679,9 +673,9 @@ const PERSIST_FLAG_KEY = 'forgenova_mvp_persist_on';
       chartA=new Chart(els.chartA,{type:'bar',data:{labels:dLabels,datasets:[{label:'Entries/day',data:dCounts}]},options:{plugins:{legend:{display:false}}}});
       const app=state.appName;
       if(app==='Maintenance Log'){ const byShift={}; recs.forEach(r=>{ const s=r.shift||'Unknown'; byShift[s]=(byShift[s]||0)+1; }); chartB=new Chart(els.chartB,{type:'bar',data:{labels:Object.keys(byShift),datasets:[{label:'Events by shift',data:Object.values(byShift)}]},options:{plugins:{legend:{display:false}}}}); }
-      else if(app==='Production QC'){ const byStatus={}; recs.forEach(r=>{ const s=r.status||'Unknown'; byStatus[s]=(byStatus[s]||0)+1; }); chartB=new Chart(els.chartB,{type:'pie',data:{labels:Object.keys(byStatus),datasets:[{data:Object.values(byStatus)}]}}); }
+      else if(app==='Production QC'){ let pass=0,fail=0; recs.forEach(r=>{ (r.passed===true || String(r.passed)==='true' || String(r.passed).toLowerCase()==='yes')?pass++:fail++; }); chartB=new Chart(els.chartB,{type:'pie',data:{labels:['Pass','Fail'],datasets:[{data:[pass,fail]}]}}); }
       else if(app==='Inventory Count'){ const byLoc={}; recs.forEach(r=>{ const loc=r.location||'Unknown'; byLoc[loc]=(byLoc[loc]||0)+1; }); chartB=new Chart(els.chartB,{type:'bar',data:{labels:Object.keys(byLoc),datasets:[{label:'Counts logged',data:Object.values(byLoc)}]},options:{plugins:{legend:{display:false}}}}); }
-      else if(app==='Safety Audit'){ const sev={Low:0,Medium:0,High:0,Critical:0}; recs.forEach(r=>{ const k=r.highest_severity||'Low'; if(sev[k]!==undefined) sev[k]++; }); chartB=new Chart(els.chartB,{type:'bar',data:{labels:Object.keys(sev),datasets:[{label:'Findings by Severity',data:Object.values(sev)}]},options:{plugins:{legend:{display:false}}}}); }
+      else if(app==='Safety Audit'){ const sev={Low:0,Medium:0,High:0}; recs.forEach(r=>{ const k=r.highest_severity||'Low'; sev[k]=(sev[k]||0)+1; }); chartB=new Chart(els.chartB,{type:'bar',data:{labels:Object.keys(sev),datasets:[{label:'Findings',data:Object.values(sev)}]},options:{plugins:{legend:{display:false}}}}); }
       else { chartB=new Chart(els.chartB,{type:'bar',data:{labels:[],datasets:[{data:[]}]}}); } }
 
     function importCsv(file){
@@ -783,19 +777,7 @@ const PERSIST_FLAG_KEY = 'forgenova_mvp_persist_on';
     }
     function csvSafe(v){ if(v==null) return ''; const s=String(v).replace(/"/g,'""'); return /[",\n]/.test(s)? '"'+s+'"': s; }
 
-    function renderAll() {
-      console.log('Refreshing all UI components...');
-      deriveFiltered();
-      renderTemplates();
-      renderFieldList();
-      renderForm();
-      renderTable();
-      rebuildKpis();
-      rebuildCharts();
-      rebuildDashboardSummary();
-      generateInsights(False);
-      markActiveTemplate();
-    }
+    function renderAll(){ renderTemplates(); renderFieldList(); renderForm(); renderTable(); rebuildKpis(); rebuildCharts(); }
 
     // Events
     $('csvBtn').onclick = ()=> $('csvInput').click();
@@ -837,27 +819,14 @@ const PERSIST_FLAG_KEY = 'forgenova_mvp_persist_on';
         // Clear local data regardless of Supabase result
         state.records=[]; 
         state.filtered=[];
-        
-        // Also clear from state.dataByApp to prevent reappearance
-        if(state.dataByApp && state.dataByApp[state.appName]) {
-          state.dataByApp[state.appName] = [];
-        }
-        
-        // Clear from localStorage
         clearLocalForTemplate(state.appName); // Pass the template name explicitly
-        
-        // Refresh all UI components
         deriveFiltered(); 
         renderAll(); 
         rebuildKpis(); 
         rebuildCharts();
-        
         toast('All data deleted for ' + state.appName);
         $('status').textContent='Template data deleted';
         console.log('✅ Deleted all data for template:', state.appName);
-        console.log('  - Cleared state.records');
-        console.log('  - Cleared state.dataByApp[' + state.appName + ']');
-        console.log('  - Cleared localStorage');
       }
     };
     $('saveEntry').onclick = (e)=>{ 
@@ -979,7 +948,7 @@ function generateInsights(showToast){
     if(top.length) out.push('Most counted locations: ' + top.map(t=>`${t[0]} (${t[1]})`).join(', '));
   } else if(app==='Safety Audit'){
     const sev={low:0,medium:0,high:0};
-    recs.forEach(r=>{ const s=String(fval(r,['severity'])).toLowerCase(); if(sev[s]!==undefined) sev[s]++; });
+    recs.forEach(r=>{ const s=String(fval(r,['highest_severity'])).toLowerCase(); if(sev[s]!==undefined) sev[s]++; });
     out.push(`Severity mix — Low: ${sev.low}, Medium: ${sev.medium}, High: ${sev.high}`);
     const unresolved = recs.filter(r=> String(fval(r,['resolved'])).toLowerCase()!=='true' && String(fval(r,['resolved'])).toLowerCase()!=='yes').length;
     out.push(`Unresolved findings: ${unresolved}`);
@@ -1024,7 +993,7 @@ function rebuildDashboardSummary(){
     Object.entries(byLoc).sort((a,b)=>b[1]-a[1]).slice(0,5).forEach(([k,v])=>addRow([k,v]));
   } else if(app==='Safety Audit'){
     setHeader(['Severity','Findings']);
-    const sev={Low:0,Medium:0,High:0}; rows.forEach(r=>{ const s=String(fval(r,['severity'])); if(sev[s]!==undefined) sev[s]++; });
+    const sev={Low:0,Medium:0,High:0}; rows.forEach(r=>{ const s=String(fval(r,['highest_severity'])); if(sev[s]!==undefined) sev[s]++; });
     Object.entries(sev).forEach(([k,v])=>addRow([k,v]));
   } else {
     setHeader(['Metric','Value']); addRow(['Records', rows.length]);
@@ -1907,7 +1876,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     } else if(app==='Safety Audit'){
       var sev = { Low:0, Medium:0, High:0 };
       for (var n=0;n<recs.length;n++){
-        var s2 = String(val(recs[n], ['severity'])).toLowerCase();
+        var s2 = String(val(recs[n], ['highest_severity'])).toLowerCase();
         if(s2==='low') sev.Low++; else if(s2==='medium') sev.Medium++; else if(s2==='high') sev.High++;
       }
       labelsB = Object.keys(sev); dataB = labelsB.map(function(k){return sev[k];});
