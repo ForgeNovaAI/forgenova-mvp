@@ -783,7 +783,19 @@ const PERSIST_FLAG_KEY = 'forgenova_mvp_persist_on';
     }
     function csvSafe(v){ if(v==null) return ''; const s=String(v).replace(/"/g,'""'); return /[",\n]/.test(s)? '"'+s+'"': s; }
 
-    function renderAll(){ renderTemplates(); renderFieldList(); renderForm(); renderTable(); rebuildKpis(); rebuildCharts(); }
+    function renderAll() {
+      console.log('Refreshing all UI components...');
+      deriveFiltered();
+      renderTemplates();
+      renderFieldList();
+      renderForm();
+      renderTable();
+      rebuildKpis();
+      rebuildCharts();
+      rebuildDashboardSummary();
+      generateInsights(False);
+      markActiveTemplate();
+    }
 
     // Events
     $('csvBtn').onclick = ()=> $('csvInput').click();
