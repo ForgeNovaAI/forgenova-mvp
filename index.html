@@ -3003,6 +3003,43 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 </script>
+<script>
+(function(){
+  // Prevent overlapping chart builds and ensure fresh canvas contexts
+  var __renderingCharts = false;
+  function resetCanvas(id){
+    try{
+      var el = document.getElementById(id);
+      if(!el || !el.parentNode) return el;
+      var clone = el.cloneNode(false); // no children/context
+      clone.id = el.id; // preserve id
+      // preserve size to avoid layout jumps
+      clone.width = el.width; clone.height = el.height;
+      el.parentNode.replaceChild(clone, el);
+      return clone;
+    }catch(_){ return document.getElementById(id); }
+  }
+
+  if (typeof window.rebuildCharts === 'function'){
+    var _rebuild = window.rebuildCharts;
+    window.rebuildCharts = function(){
+      if(__renderingCharts) return; // skip re-entrant calls
+      __renderingCharts = true;
+      try{
+        try{ if(window.chartA && typeof window.chartA.destroy==='function') window.chartA.destroy(); }catch(_){}
+        try{ if(window.chartB && typeof window.chartB.destroy==='function') window.chartB.destroy(); }catch(_){ }
+        window.chartA = null; window.chartB = null;
+        // Replace canvases to guarantee a fresh drawing surface
+        resetCanvas('chartA');
+        resetCanvas('chartB');
+        _rebuild();
+      } finally {
+        __renderingCharts = false;
+      }
+    };
+  }
+})();
+</script>
 </body>
 </html>
 
