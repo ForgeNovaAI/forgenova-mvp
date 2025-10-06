@@ -20,22 +20,27 @@
 <meta content="Single-file MVP with strict layout, per-template memory, import modes, delete, filter, KPIs, and charts." name="description"/>
 <!-- CSV parser -->
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-<!-- Chart.js + fallback loader -->
-<script src="https://unpkg.com/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<!-- Chart.js - single reliable CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
-    (function(){
-      function ensureChartLoaded() {
-        if (window.Chart) return;
-        var s = document.createElement('script');
-        s.src = "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js";
-        document.head.appendChild(s);
+  // Simple Chart.js availability check
+  (function(){
+    var attempts = 0;
+    function checkChart(){
+      attempts++;
+      if(window.Chart){
+        console.log('✅ Chart.js loaded successfully');
+        return;
       }
-      if (!window.Chart) {
-        if (document.readyState === "complete" || document.readyState === "interactive") ensureChartLoaded();
-        else document.addEventListener("DOMContentLoaded", ensureChartLoaded);
+      if(attempts < 50){ // 5 seconds max
+        setTimeout(checkChart, 100);
+      } else {
+        console.error('❌ Chart.js failed to load after 5 seconds');
       }
-    })();
-  </script>
+    }
+    checkChart();
+  })();
+</script>
 <style>
     :root{ --bg:#f7f9fc; --card:#fff; --text:#0f172a; --muted:#475569; --border:#e5e7eb; --brand:#ff6a00; }
     *{box-sizing:border-box}
@@ -491,7 +496,22 @@ const state = { appName: lastTemplate, fields: initialTemplate.fields.map(f=>({ 
           deriveFiltered(); 
           renderAll(); 
           rebuildKpis(); 
-          rebuildCharts(); 
+          
+          // IMMEDIATE chart updates on template switch
+          console.log('🚀 INSTANT chart update on template switch...');
+          try {
+            // Force chart area visible first
+            const chartArea = document.getElementById('chartArea');
+            if(chartArea) {
+              chartArea.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+              chartArea.classList.add('visible');
+            }
+            rebuildCharts();
+            console.log('✅ Charts updated instantly on template switch');
+          } catch(e) {
+            console.error('Chart update error on template switch:', e);
+          }
+          
           rebuildDashboardSummary(); 
           generateInsights(false);
           
@@ -605,31 +625,56 @@ const state = { appName: lastTemplate, fields: initialTemplate.fields.map(f=>({ 
       else if(app==='Safety Audit'){ $('kpiUniqueKeyLabel').textContent='Severities'; const s=new Set(rows.map(r=>r.highest_severity).filter(Boolean)); $('kpiUniqueKey').textContent=s.size||'–'; }
       else { $('kpiUniqueKeyLabel').textContent='Context Metric'; $('kpiUniqueKey').textContent='–'; } }
     function rebuildCharts(){ 
-      if(chartA) chartA.destroy(); 
-      if(chartB) chartB.destroy(); 
-      const recs=currentRows();
-      
-      // Only render charts if there is data
-      if(recs.length === 0) {
-        // Hide chart containers when no data
-        const chartArea = document.getElementById('chartArea');
-        if(chartArea) chartArea.style.display = 'none';
+      // CRITICAL: Wait for Chart.js to load before creating charts
+      if(!window.Chart) {
+        console.log('⏳ Chart.js not loaded yet, retrying...');
+        setTimeout(rebuildCharts, 100);
         return;
       }
       
-      // Show chart containers when data exists
-      const chartArea = document.getElementById('chartArea');
-      if(chartArea) chartArea.style.display = 'block';
+      // Destroy existing charts safely
+      try { if(chartA && chartA.destroy) chartA.destroy(); } catch(e) {}
+      try { if(chartB && chartB.destroy) chartB.destroy(); } catch(e) {}
       
+      const recs=currentRows();
+      
+      // ALWAYS show chart area (even with placeholder charts)
+      const chartArea = document.getElementById('chartArea');
+      if(chartArea) {
+        chartArea.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+        chartArea.classList.add('visible');
+        console.log('📊 Chart area forced visible in rebuildCharts');
+      }
+      
+      // If no data, create empty placeholder charts
+      if(recs.length === 0) {
+        console.log('📊 No data - creating placeholder charts');
+        try {
+          chartA=new Chart(els.chartA,{type:'bar',data:{labels:['No Data'],datasets:[{label:'Records',data:[0]}]},options:{plugins:{legend:{display:false}}}});
+          chartB=new Chart(els.chartB,{type:'bar',data:{labels:['No Data'],datasets:[{label:'Records',data:[0]}]},options:{plugins:{legend:{display:false}}}});
+        } catch(e) { console.error('Error creating placeholder charts:', e); }
+        return;
+      }
+      
+      // Create charts with data
       const byDate={}; recs.forEach(r=>{ const d=(r.date||'').slice(0,10)||'Unknown'; byDate[d]=(byDate[d]||0)+1; });
       const dLabels=Object.keys(byDate).sort(); const dCounts=dLabels.map(k=>byDate[k]);
-      chartA=new Chart(els.chartA,{type:'bar',data:{labels:dLabels,datasets:[{label:'Entries/day',data:dCounts}]},options:{plugins:{legend:{display:false}}}});
-      const app=state.appName;
-      if(app==='Maintenance Log'){ const byShift={}; recs.forEach(r=>{ const s=r.shift||'Unknown'; byShift[s]=(byShift[s]||0)+1; }); chartB=new Chart(els.chartB,{type:'bar',data:{labels:Object.keys(byShift),datasets:[{label:'Events by shift',data:Object.values(byShift)}]},options:{plugins:{legend:{display:false}}}}); }
-      else if(app==='Production QC'){ let pass=0,fail=0; recs.forEach(r=>{ (r.passed===true || String(r.passed)==='true' || String(r.passed).toLowerCase()==='yes')?pass++:fail++; }); chartB=new Chart(els.chartB,{type:'pie',data:{labels:['Pass','Fail'],datasets:[{data:[pass,fail]}]}}); }
-      else if(app==='Inventory Count'){ const byLoc={}; recs.forEach(r=>{ const loc=r.location||'Unknown'; byLoc[loc]=(byLoc[loc]||0)+1; }); chartB=new Chart(els.chartB,{type:'bar',data:{labels:Object.keys(byLoc),datasets:[{label:'Counts logged',data:Object.values(byLoc)}]},options:{plugins:{legend:{display:false}}}}); }
-      else if(app==='Safety Audit'){ const sev={Low:0,Medium:0,High:0}; recs.forEach(r=>{ const k=r.highest_severity||'Low'; sev[k]=(sev[k]||0)+1; }); chartB=new Chart(els.chartB,{type:'bar',data:{labels:Object.keys(sev),datasets:[{label:'Findings',data:Object.values(sev)}]},options:{plugins:{legend:{display:false}}}}); }
-      else { chartB=new Chart(els.chartB,{type:'bar',data:{labels:[],datasets:[{data:[]}]}}); } }
+      
+      try {
+        chartA=new Chart(els.chartA,{type:'bar',data:{labels:dLabels,datasets:[{label:'Entries/day',data:dCounts}]},options:{plugins:{legend:{display:false}}}});
+        
+        const app=state.appName;
+        if(app==='Maintenance Log'){ const byShift={}; recs.forEach(r=>{ const s=r.shift||'Unknown'; byShift[s]=(byShift[s]||0)+1; }); chartB=new Chart(els.chartB,{type:'bar',data:{labels:Object.keys(byShift),datasets:[{label:'Events by shift',data:Object.values(byShift)}]},options:{plugins:{legend:{display:false}}}}); }
+        else if(app==='Production QC'){ let pass=0,fail=0; recs.forEach(r=>{ (r.passed===true || String(r.passed)==='true' || String(r.passed).toLowerCase()==='yes')?pass++:fail++; }); chartB=new Chart(els.chartB,{type:'pie',data:{labels:['Pass','Fail'],datasets:[{data:[pass,fail]}]}}); }
+        else if(app==='Inventory Count'){ const byLoc={}; recs.forEach(r=>{ const loc=r.location||'Unknown'; byLoc[loc]=(byLoc[loc]||0)+1; }); chartB=new Chart(els.chartB,{type:'bar',data:{labels:Object.keys(byLoc),datasets:[{label:'Counts logged',data:Object.values(byLoc)}]},options:{plugins:{legend:{display:false}}}}); }
+        else if(app==='Safety Audit'){ const sev={Low:0,Medium:0,High:0}; recs.forEach(r=>{ const k=r.highest_severity||'Low'; sev[k]=(sev[k]||0)+1; }); chartB=new Chart(els.chartB,{type:'bar',data:{labels:Object.keys(sev),datasets:[{label:'Findings',data:Object.values(sev)}]},options:{plugins:{legend:{display:false}}}}); }
+        else { chartB=new Chart(els.chartB,{type:'bar',data:{labels:[],datasets:[{data:[]}]}}); }
+        
+        console.log('✅ Charts rendered successfully');
+      } catch(e) {
+        console.error('❌ Error creating charts:', e);
+      }
+    }
 
     function importCsv(file){
       const statusEl = $('status');
@@ -718,7 +763,22 @@ const state = { appName: lastTemplate, fields: initialTemplate.fields.map(f=>({ 
           renderForm();
           renderTable();
           rebuildKpis();
-          rebuildCharts();
+          
+          // IMMEDIATE chart updates after CSV import
+          console.log('🚀 INSTANT chart update after CSV import...');
+          try {
+            rebuildCharts();
+            // Force chart area visible again
+            const chartArea = document.getElementById('chartArea');
+            if(chartArea) {
+              chartArea.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+              chartArea.classList.add('visible');
+            }
+            console.log('✅ Charts updated instantly after CSV import');
+          } catch(e) {
+            console.error('Chart update error:', e);
+          }
+          
           rebuildDashboardSummary();
           generateInsights(true);
           statusEl.textContent = `Imported ${rows.length} rows (${mode})`;
@@ -3003,41 +3063,59 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 </script>
+<!-- Removed conflicting chart wrapper -->
+<!-- IMMEDIATE chart rendering on site load -->
 <script>
 (function(){
-  // Prevent overlapping chart builds and ensure fresh canvas contexts
-  var __renderingCharts = false;
-  function resetCanvas(id){
-    try{
-      var el = document.getElementById(id);
-      if(!el || !el.parentNode) return el;
-      var clone = el.cloneNode(false); // no children/context
-      clone.id = el.id; // preserve id
-      // preserve size to avoid layout jumps
-      clone.width = el.width; clone.height = el.height;
-      el.parentNode.replaceChild(clone, el);
-      return clone;
-    }catch(_){ return document.getElementById(id); }
+  var chartInitialized = false;
+  
+  function forceShowCharts(){
+    // Force chart area visible immediately
+    var chartArea = document.getElementById('chartArea');
+    if(chartArea) {
+      chartArea.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+      chartArea.classList.add('visible');
+      console.log('📊 Chart area FORCED visible');
+    }
   }
-
-  if (typeof window.rebuildCharts === 'function'){
-    var _rebuild = window.rebuildCharts;
-    window.rebuildCharts = function(){
-      if(__renderingCharts) return; // skip re-entrant calls
-      __renderingCharts = true;
-      try{
-        try{ if(window.chartA && typeof window.chartA.destroy==='function') window.chartA.destroy(); }catch(_){}
-        try{ if(window.chartB && typeof window.chartB.destroy==='function') window.chartB.destroy(); }catch(_){ }
-        window.chartA = null; window.chartB = null;
-        // Replace canvases to guarantee a fresh drawing surface
-        resetCanvas('chartA');
-        resetCanvas('chartB');
-        _rebuild();
-      } finally {
-        __renderingCharts = false;
+  
+  function renderChartsNow(){
+    if(chartInitialized) return;
+    
+    forceShowCharts();
+    
+    if(window.Chart && typeof rebuildCharts === 'function') {
+      console.log('🎯 IMMEDIATE chart rendering...');
+      try {
+        rebuildCharts();
+        chartInitialized = true;
+        console.log('✅ Charts initialized successfully');
+      } catch(e) {
+        console.error('Chart render error:', e);
+        setTimeout(renderChartsNow, 100);
       }
-    };
+    } else {
+      console.log('⏳ Waiting for Chart.js and rebuildCharts...');
+      setTimeout(renderChartsNow, 50); // Faster retry
+    }
   }
+  
+  // AGGRESSIVE: Try multiple times immediately
+  renderChartsNow();
+  setTimeout(renderChartsNow, 10);
+  setTimeout(renderChartsNow, 50);
+  setTimeout(renderChartsNow, 100);
+  setTimeout(renderChartsNow, 200);
+  setTimeout(renderChartsNow, 500);
+  
+  // Also try on standard events
+  document.addEventListener('DOMContentLoaded', renderChartsNow);
+  window.addEventListener('load', renderChartsNow);
+  
+  // Force show charts immediately regardless
+  forceShowCharts();
+  setTimeout(forceShowCharts, 10);
+  setTimeout(forceShowCharts, 100);
 })();
 </script>
 </body>
