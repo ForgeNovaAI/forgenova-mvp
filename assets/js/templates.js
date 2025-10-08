@@ -3,6 +3,7 @@
 (function(){
   window.TEMPLATES = [
     { name:'Maintenance Log', badge:'Operations', desc:'Track downtime by machine, shift, and reason.',
+      primaryKey: ['machine_id', 'date', 'shift'], // Composite key: machine + date + shift
       fields:[
         {label:'Machine ID', key:'machine_id', type:'text', required:true},
         {label:'Date', key:'date', type:'date', required:true},
@@ -13,6 +14,7 @@
       ]
     },
     { name:'Production QC', badge:'Quality', desc:'Log batch-level inspections and defects.',
+      primaryKey: ['batch_id', 'date'], // Composite key: batch + date
       fields:[
         {label:'Batch ID', key:'batch_id', type:'text', required:true},
         {label:'Date', key:'date', type:'date', required:true},
@@ -23,6 +25,7 @@
       ]
     },
     { name:'Inventory Count', badge:'Inventory', desc:'Cycle counts with variance analysis.',
+      primaryKey: ['item_id', 'date'], // Composite key: item + date
       fields:[
         {label:'Item ID', key:'item_id', type:'text', required:true},
         {label:'Item Name', key:'item_name', type:'text'},
@@ -39,6 +42,7 @@
       ]
     },
     { name:'Safety Audit', badge:'EHS', desc:'Track findings, severity, and resolution.',
+      primaryKey: ['area', 'date'], // Composite key: area + date
       fields:[
         {label:'Area', key:'area', type:'text', required:true},
         {label:'Inspection Date', key:'date', type:'date', required:true},
