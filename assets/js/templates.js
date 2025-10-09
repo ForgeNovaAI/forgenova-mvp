@@ -14,14 +14,19 @@
       ]
     },
     { name:'Production QC', badge:'Quality', desc:'Log batch-level inspections and defects.',
-      primaryKey: ['batch_id', 'date'], // Composite key: batch + date
+      primaryKey: ['batch_id', 'date', 'shift'], // Composite key: batch + date + shift
       fields:[
         {label:'Batch ID', key:'batch_id', type:'text', required:true},
         {label:'Date', key:'date', type:'date', required:true},
+        {label:'Shift', key:'shift', type:'select', options:['A','B','C']},
         {label:'Inspector', key:'inspector', type:'text'},
-        {label:'Defects', key:'defects', type:'number'},
-        {label:'Passed', key:'passed', type:'checkbox'},
-        {label:'Notes', key:'notes', type:'textarea'}
+        {label:'Units Sampled', key:'units_sampled', type:'number'},
+        {label:'Defects Total', key:'defects_total', type:'number'},
+        {label:'Top Defect Type', key:'top_defect_type', type:'text'},
+        {label:'Status', key:'status', type:'select', options:['Pass','Fail','Pending']},
+        {label:'Rework Required', key:'rework_required', type:'checkbox'},
+        {label:'Notes', key:'notes', type:'textarea'},
+        {label:'Defect Rate %', key:'defect_rate_pct', type:'number'}
       ]
     },
     { name:'Inventory Count', badge:'Inventory', desc:'Cycle counts with variance analysis.',
@@ -42,13 +47,16 @@
       ]
     },
     { name:'Safety Audit', badge:'EHS', desc:'Track findings, severity, and resolution.',
-      primaryKey: ['area', 'date'], // Composite key: area + date
+      primaryKey: ['audit_id'], // Primary key: unique audit ID
       fields:[
+        {label:'Audit ID', key:'audit_id', type:'text', required:true},
+        {label:'Date', key:'date', type:'date', required:true},
         {label:'Area', key:'area', type:'text', required:true},
-        {label:'Inspection Date', key:'date', type:'date', required:true},
-        {label:'Issues Found', key:'issues', type:'number'},
-        {label:'Severity', key:'severity', type:'select', options:['Low','Medium','High']},
-        {label:'Resolved', key:'resolved', type:'checkbox'},
+        {label:'Auditor', key:'auditor', type:'text'},
+        {label:'Findings Count', key:'findings_count', type:'number'},
+        {label:'Highest Severity', key:'highest_severity', type:'select', options:['Low','Medium','High']},
+        {label:'Corrective Actions Required', key:'corrective_actions_required', type:'checkbox'},
+        {label:'Status', key:'status', type:'select', options:['Open','In Progress','Closed']},
         {label:'Notes', key:'notes', type:'textarea'}
       ]
     }

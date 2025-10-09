@@ -660,7 +660,7 @@ const state = { appName: lastTemplate, fields: initialTemplate.fields.map(f=>({ 
     let chartA, chartB;
     function rebuildKpis(){ const rows=currentRows(); $('kpiRecords').textContent=rows.length; const app=state.appName;
       if(app==='Maintenance Log'){ $('kpiUniqueKeyLabel').textContent='Unique Machines'; const s=new Set(rows.map(r=>r.machine_id).filter(Boolean)); $('kpiUniqueKey').textContent=s.size||'–'; }
-      else if(app==='Production QC'){ $('kpiUniqueKeyLabel').textContent='Pass Rate'; const total=rows.length||1; const pass=rows.filter(r=> r.passed===true || String(r.passed)==='true' || String(r.passed).toLowerCase()==='yes').length; const rate=Math.round((pass/total)*100); $('kpiUniqueKey').textContent=isNaN(rate)?'–':(rate+'%'); }
+      else if(app==='Production QC'){ $('kpiUniqueKeyLabel').textContent='Pass Rate'; const total=rows.length||1; const pass=rows.filter(r=> String(r.status).toLowerCase()==='pass').length; const rate=Math.round((pass/total)*100); $('kpiUniqueKey').textContent=isNaN(rate)?'–':(rate+'%'); }
       else if(app==='Inventory Count'){ $('kpiUniqueKeyLabel').textContent='Locations'; const s=new Set(rows.map(r=>r.location).filter(Boolean)); $('kpiUniqueKey').textContent=s.size||'–'; }
       else if(app==='Safety Audit'){ $('kpiUniqueKeyLabel').textContent='Severities'; const s=new Set(rows.map(r=>r.highest_severity).filter(Boolean)); $('kpiUniqueKey').textContent=s.size||'–'; }
       else { $('kpiUniqueKeyLabel').textContent='Context Metric'; $('kpiUniqueKey').textContent='–'; } }
@@ -706,14 +706,47 @@ const state = { appName: lastTemplate, fields: initialTemplate.fields.map(f=>({ 
       const dLabels=Object.keys(byDate).sort(); const dCounts=dLabels.map(k=>byDate[k]);
       
       try {
-      chartA=new Chart(els.chartA,{type:'bar',data:{labels:dLabels,datasets:[{label:'Entries/day',data:dCounts}]},options:{plugins:{legend:{display:false}}}});
+      const app=state.appName;
+      // Chart A - use red color for Safety Audit, blue for others
+      const chartAColor = app === 'Safety Audit' ? '#dc2626' : '#3b82f6';
+      chartA=new Chart(els.chartA,{type:'bar',data:{labels:dLabels,datasets:[{label:'Entries/day',data:dCounts,backgroundColor:chartAColor}]},options:{plugins:{legend:{display:false}}}});
       window.chartA = chartA;
         
-      const app=state.appName;
       if(app==='Maintenance Log'){ const byShift={}; recs.forEach(r=>{ const s=r.shift||'Unknown'; byShift[s]=(byShift[s]||0)+1; }); chartB=new Chart(els.chartB,{type:'bar',data:{labels:Object.keys(byShift),datasets:[{label:'Events by shift',data:Object.values(byShift)}]},options:{plugins:{legend:{display:false}}}}); }
-      else if(app==='Production QC'){ let pass=0,fail=0; recs.forEach(r=>{ (r.passed===true || String(r.passed)==='true' || String(r.passed).toLowerCase()==='yes')?pass++:fail++; }); chartB=new Chart(els.chartB,{type:'pie',data:{labels:['Pass','Fail'],datasets:[{data:[pass,fail]}]}}); }
+      else if(app==='Production QC'){ let pass=0,fail=0,pending=0; recs.forEach(r=>{ const status=String(r.status||'').toLowerCase(); if(status==='pass')pass++; else if(status==='pending')pending++; else fail++; }); chartB=new Chart(els.chartB,{type:'pie',data:{labels:['Pass','Fail','Pending'],datasets:[{data:[pass,fail,pending],backgroundColor:['#10b981','#ef4444','#f59e0b']}]}}); }
       else if(app==='Inventory Count'){ const byLoc={}; recs.forEach(r=>{ const loc=r.location||'Unknown'; byLoc[loc]=(byLoc[loc]||0)+1; }); chartB=new Chart(els.chartB,{type:'bar',data:{labels:Object.keys(byLoc),datasets:[{label:'Counts logged',data:Object.values(byLoc)}]},options:{plugins:{legend:{display:false}}}}); }
-        else if(app==='Safety Audit'){ const sev={Low:0,Medium:0,High:0}; recs.forEach(r=>{ const k=r.highest_severity||'Low'; sev[k]=(sev[k]||0)+1; }); chartB=new Chart(els.chartB,{type:'bar',data:{labels:Object.keys(sev),datasets:[{label:'Findings',data:Object.values(sev)}]},options:{plugins:{legend:{display:false}}}}); }
+        else if(app==='Safety Audit'){ 
+          console.log('🔍 Building Safety Audit severity chart...');
+          console.log('  Total records:', recs.length);
+          if(recs.length > 0) {
+            console.log('  First record:', recs[0]);
+            console.log('  All field keys in first record:', Object.keys(recs[0]));
+          }
+          const sev={Low:0,Medium:0,High:0}; 
+          recs.forEach((r, idx) => { 
+            const rawVal = r.highest_severity;
+            if(idx < 5) console.log(`  Record ${idx} severity:`, rawVal, '| Full record:', r);
+            
+            // Normalize the severity value (handle case variations)
+            let k = String(rawVal || '').trim();
+            // Capitalize first letter to match our keys
+            if(k) {
+              k = k.charAt(0).toUpperCase() + k.slice(1).toLowerCase();
+            }
+            
+            if(!k) k = 'Low'; // Default to Low if empty
+            
+            if(sev[k] !== undefined) {
+              sev[k] = (sev[k] || 0) + 1;
+            } else {
+              console.warn(`  Unknown severity value: "${rawVal}" (normalized: "${k}") - defaulting to Low`);
+              sev['Low'] = (sev['Low'] || 0) + 1;
+            }
+          }); 
+          console.log('  Final severity counts:', sev);
+          // Red color scheme: Light red, Orange-red, Dark red
+          chartB=new Chart(els.chartB,{type:'bar',data:{labels:Object.keys(sev),datasets:[{label:'Findings by Severity',data:Object.values(sev),backgroundColor:['#fca5a5','#f87171','#dc2626']}]},options:{plugins:{legend:{display:false}}}}); 
+        }
         else { chartB=new Chart(els.chartB,{type:'bar',data:{labels:[],datasets:[{data:[]}]}}); }
         window.chartB = chartB;
         
@@ -3213,11 +3246,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Also try on standard events
   document.addEventListener('DOMContentLoaded', renderChartsNow);
   window.addEventListener('load', renderChartsNow);
-  
-  // Force show charts immediately regardless
-  forceShowCharts();
-  setTimeout(forceShowCharts, 10);
-  setTimeout(forceShowCharts, 100);
 })();
 </script>
 </body>
