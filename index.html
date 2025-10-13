@@ -13,6 +13,18 @@
   // Create Supabase client
   const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 </script>
+<!-- Auth Helper -->
+<script src="assets/js/auth.js"></script>
+<script>
+  // Protect this page - require authentication
+  (async function() {
+    const isAuthenticated = await window.ForgeAuth.requireAuth();
+    if (isAuthenticated) {
+      // Display user info in header
+      await window.ForgeAuth.displayUserInfo('userInfo');
+    }
+  })();
+</script>
 <meta charset="utf-8"/>
 <title>ForgeNova MVP — Strict Layout</title>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
@@ -163,6 +175,10 @@ main, .panel { min-width: 0; }
 <button class="btn" id="deleteDataBtn">🗑️ Delete Data</button>
 <button class="btn primary" id="scrollToForm">➕ Add Entry</button>
 <span aria-live="polite" class="muted" id="status"></span>
+<div style="margin-left: auto; display: flex; gap: 12px; align-items: center;">
+<div id="userInfo"></div>
+<button class="btn" id="logoutBtn" onclick="window.ForgeAuth.signOut()">🚪 Logout</button>
+</div>
 </div>
 </header>
 <div class="layout">
