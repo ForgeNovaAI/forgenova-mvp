@@ -63,7 +63,7 @@ async function redirectIfAuthenticated() {
     
     if (session) {
         console.log('✅ Already authenticated, redirecting to dashboard...');
-        window.location.href = '/index.html';
+        window.location.href = '/dashboard.html';
         return true;
     }
     

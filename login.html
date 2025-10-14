@@ -251,7 +251,7 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
                 // User is already logged in, redirect to dashboard
-                window.location.href = '/index.html';
+                window.location.href = '/dashboard.html';
             }
         }
 
@@ -298,7 +298,7 @@
                     
                     // Redirect to dashboard after successful login
                     setTimeout(() => {
-                        window.location.href = '/index.html';
+                        window.location.href = '/dashboard.html';
                     }, 1000);
                 }
             } catch (error) {
