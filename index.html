@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ForgeNovaAI - Build No-Code Factory Apps</title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+    <link rel="alternate icon" href="assets/img/favicon-32.png">
+    <link rel="apple-touch-icon" href="assets/img/favicon-64.png">
+    
     <!-- Supabase SDK -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
@@ -161,9 +166,9 @@
         .modal-content {
             background: white;
             border-radius: 16px;
-            padding: 40px;
+            padding: 28px 32px;
             width: 90%;
-            max-width: 440px;
+            max-width: 400px;
             box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
             position: relative;
             animation: slideUp 0.3s ease-out;
@@ -205,7 +210,7 @@
 
         .modal-header {
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: 20px;
         }
 
         .modal-logo {
@@ -213,7 +218,7 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            margin-bottom: 24px;
+            margin-bottom: 0;
         }
 
         .modal-logo svg {
@@ -267,7 +272,7 @@
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         label {
@@ -295,7 +300,7 @@
         .btn-submit {
             width: 100%;
             padding: 12px 16px;
-            background: var(--brand);
+            background: #ff5e1e;
             color: white;
             border: none;
             border-radius: 8px;
@@ -306,7 +311,7 @@
         }
 
         .btn-submit:hover {
-            filter: brightness(0.95);
+            background: #e55419;
         }
 
         .btn-submit:disabled {
@@ -543,10 +548,8 @@
             
             <div class="modal-header">
                 <div class="modal-logo">
-                    <img src="assets/img/ForgeNova Final Logo.png" alt="ForgeNovaAI" style="height:60px;width:auto"/>
+                    <img src="assets/img/ForgeNova Final Logo.png" alt="ForgeNovaAI" style="height:50px;width:auto"/>
                 </div>
-                <h2 class="modal-title">Welcome</h2>
-                <p class="modal-subtitle">Sign in to your account or create a new one</p>
             </div>
 
             <!-- Tabs -->
@@ -571,7 +574,7 @@
                     </div>
 
                     <div style="text-align: right; margin-bottom: 16px;">
-                        <a href="#" onclick="switchTab('reset'); return false;" style="color: var(--brand); text-decoration: none; font-size: 14px;">Forgot password?</a>
+                        <a href="#" onclick="switchTab('reset'); return false;" style="color: #ff5e1e; text-decoration: none; font-size: 14px;">Forgot password?</a>
                     </div>
 
                     <button type="submit" class="btn-submit" id="loginBtn">
@@ -699,7 +702,7 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
                 // Redirect to dashboard if already logged in
-                window.location.href = '/dashboard.html';
+                window.location.href = '/workspace.html';
             }
         }
 
@@ -708,7 +711,7 @@
             supabaseClient.auth.getSession().then(({ data: { session } }) => {
                 if (session) {
                     // User is logged in, go to dashboard
-                    window.location.href = '/dashboard.html';
+                    window.location.href = '/workspace.html';
                 } else {
                     // User not logged in, show login modal
                     openModal();
@@ -738,7 +741,7 @@
                 if (data.session) {
                     showAlert('Login successful! Redirecting...', 'success');
                     setTimeout(() => {
-                        window.location.href = '/dashboard.html';
+                        window.location.href = '/workspace.html';
                     }, 1000);
                 }
             } catch (error) {
@@ -789,7 +792,7 @@
                     if (data.session) {
                         showAlert('Account created successfully! Redirecting...', 'success');
                         setTimeout(() => {
-                            window.location.href = '/dashboard.html';
+                            window.location.href = '/workspace.html';
                         }, 1500);
                     } else {
                         showAlert('Account created! Please check your email to confirm your account.', 'success');
@@ -818,7 +821,7 @@
             
             try {
                 const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-                    redirectTo: `${window.location.origin}/dashboard.html`
+                    redirectTo: `${window.location.origin}/workspace.html`
                 });
 
                 if (error) throw error;

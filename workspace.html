@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workspace Setup - ForgeNovaAI</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+    <link rel="alternate icon" href="assets/img/favicon-32.png">
+    <link rel="apple-touch-icon" href="assets/img/favicon-64.png">
+    
+    <!-- Supabase SDK -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            color: #1f2937;
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .left-section {
+            flex: 1;
+            padding: 40px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-width: 600px;
+        }
+
+        .right-section {
+            flex: 1;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo img {
+            height: 60px;
+            width: auto;
+        }
+
+        .breadcrumb {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .breadcrumb span:last-child {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .main-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.2s;
+            background: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #ff5e1e;
+        }
+
+        .industry-row {
+            display: flex;
+            gap: 16px;
+        }
+
+        .industry-row .form-group {
+            flex: 1;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .btn-continue {
+            width: 100%;
+            padding: 16px 24px;
+            background: #ff5e1e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-continue:hover {
+            background: #e55419;
+        }
+
+        .illustration {
+            width: 300px;
+            height: 300px;
+            background: #fef3e7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        .illustration-content {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #ff5e1e, #ff7a33);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .computer-screen {
+            width: 80px;
+            height: 60px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .checkmark {
+            width: 24px;
+            height: 24px;
+            background: #ff5e1e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .floating-icons {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .floating-icon {
+            width: 32px;
+            height: 32px;
+            background: #ff5e1e;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        .description {
+            text-align: center;
+            font-size: 16px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .left-section {
+                padding: 20px;
+            }
+
+            .right-section {
+                padding: 20px;
+            }
+
+            .industry-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .illustration {
+                width: 200px;
+                height: 200px;
+            }
+
+            .illustration-content {
+                width: 140px;
+                height: 140px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Section - Form -->
+        <div class="left-section">
+            <div class="header">
+                <div class="logo">
+                    <img src="assets/img/ForgeNova Final Logo.png" alt="ForgeNovaAI" style="height: 60px; width: auto;">
+                </div>
+                <div class="breadcrumb">
+                    <span>Account</span> > <span>Workspace</span>
+                </div>
+            </div>
+
+            <h1 class="main-title">Let's set up your workspace</h1>
+            <p class="subtitle">Create a workspace for your company or department. You can add teammates later.</p>
+
+            <form id="workspaceForm">
+                <div class="form-group">
+                    <label for="workspaceName">Workspace Name</label>
+                    <input type="text" id="workspaceName" name="workspaceName" value="Acme Manufacturing" required>
+                </div>
+
+                <div class="industry-row">
+                    <div class="form-group">
+                        <label for="industry">Industry</label>
+                        <select id="industry" name="industry" required>
+                            <option value="manufacturing" selected>Manufacturing</option>
+                            <option value="automotive">Automotive</option>
+                            <option value="aerospace">Aerospace</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="food">Food & Beverage</option>
+                            <option value="pharmaceutical">Pharmaceutical</option>
+                            <option value="textiles">Textiles</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="companySize">Company Size</label>
+                        <select id="companySize" name="companySize" required>
+                            <option value="1-10">1-10</option>
+                            <option value="11-50">11-50</option>
+                            <option value="51-100" selected>51-100</option>
+                            <option value="101-500">101-500</option>
+                            <option value="501-1000">501-1000</option>
+                            <option value="1000+">1000+</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="timezone">Time Zone</label>
+                    <input type="text" id="timezone" name="timezone" value="(GMT-5:00) Eastern Time" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label for="teammates">Invite Teammates</label>
+                    <input type="email" id="teammates" name="teammates" placeholder="Enter email (optional)" multiple>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="confirmBusiness" name="confirmBusiness" required>
+                    <label for="confirmBusiness">I confirm that this workspace represents a real business or project.</label>
+                </div>
+
+                <button type="submit" class="btn-continue">Continue to Dashboard</button>
+            </form>
+        </div>
+
+        <!-- Right Section - Illustration -->
+        <div class="right-section">
+            <div class="illustration">
+                <div class="illustration-content">
+                    <div class="computer-screen">
+                        <div class="checkmark">✓</div>
+                    </div>
+                    <div class="floating-icons">
+                        <div class="floating-icon">✓</div>
+                        <div class="floating-icon">✓</div>
+                    </div>
+                </div>
+            </div>
+            <p class="description">
+                ForgeNova AI helps you track<br>
+                Maintenance, QC, and Safety –<br>
+                all in one platform.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication on page load
+        (async function() {
+            const { createClient } = supabase;
+            const SUPABASE_URL = "https://icbfadlizwwonymqdclb.supabase.co";
+            const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljYmZhZGxpend3b255bXFkY2xiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgwMzU4OTUsImV4cCI6MjA3MzYxMTg5NX0.sQNGjFdC-WM0nSdGucgx3DelUJ5KJXh6S8J54xWUEu0";
+            const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                // Not authenticated, redirect to login
+                window.location.href = '/';
+                return;
+            }
+        })();
+
+        document.getElementById('workspaceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = new FormData(this);
+            const workspaceData = {
+                name: formData.get('workspaceName'),
+                industry: formData.get('industry'),
+                companySize: formData.get('companySize'),
+                timezone: formData.get('timezone'),
+                teammates: formData.get('teammates'),
+                confirmBusiness: formData.get('confirmBusiness')
+            };
+
+            // Store workspace data in localStorage
+            localStorage.setItem('workspaceData', JSON.stringify(workspaceData));
+            
+            // Redirect to dashboard
+            window.location.href = 'dashboard.html';
+        });
+
+        // Auto-detect timezone
+        function detectTimezone() {
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const offset = new Date().getTimezoneOffset();
+            const hours = Math.floor(Math.abs(offset) / 60);
+            const minutes = Math.abs(offset) % 60;
+            const sign = offset <= 0 ? '+' : '-';
+            const gmtString = `(GMT${sign}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}) ${timezone}`;
+            
+            document.getElementById('timezone').value = gmtString;
+        }
+
+        // Initialize timezone on page load
+        detectTimezone();
+    </script>
+</body>
+</html>

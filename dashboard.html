@@ -16,12 +16,20 @@
 <!-- Auth Helper -->
 <script src="assets/js/auth.js"></script>
 <script>
-  // Protect this page - require authentication
+  // Check if user has completed workspace setup
   (async function() {
-    const isAuthenticated = await window.ForgeAuth.requireAuth();
-    if (isAuthenticated) {
-      // Display user info in header
+    const workspaceData = localStorage.getItem('workspaceData');
+    if (!workspaceData) {
+      // No workspace data, redirect to workspace setup
+      window.location.href = '/workspace.html';
+      return;
+    }
+    
+    // Display user info in header
+    try {
       await window.ForgeAuth.displayUserInfo('userInfo');
+    } catch (e) {
+      console.log('Auth display error:', e);
     }
   })();
 </script>
