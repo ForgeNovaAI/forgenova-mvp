@@ -701,14 +701,16 @@
         async function checkAuth() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
-                // Check if user has completed workspace setup
+                // Check if this is a new signup (no workspace data) or existing user
                 const workspaceData = localStorage.getItem('workspaceData');
-                if (workspaceData) {
-                    // User has completed workspace, go to dashboard
-                    window.location.href = '/dashboard.html';
-                } else {
-                    // New user, go to workspace setup
+                const isNewSignup = localStorage.getItem('isNewSignup');
+                
+                if (isNewSignup === 'true' || !workspaceData) {
+                    // New signup or first time user, go to workspace
                     window.location.href = '/workspace.html';
+                } else {
+                    // Existing user with workspace data, go to dashboard
+                    window.location.href = '/dashboard.html';
                 }
             }
         }
@@ -717,14 +719,16 @@
         function handleExploreTemplates() {
             supabaseClient.auth.getSession().then(({ data: { session } }) => {
                 if (session) {
-                    // Check if user has completed workspace setup
+                    // Check if this is a new signup or existing user
                     const workspaceData = localStorage.getItem('workspaceData');
-                    if (workspaceData) {
-                        // User has completed workspace, go to dashboard
-                        window.location.href = '/dashboard.html';
-                    } else {
-                        // New user, go to workspace setup
+                    const isNewSignup = localStorage.getItem('isNewSignup');
+                    
+                    if (isNewSignup === 'true' || !workspaceData) {
+                        // New signup or first time user, go to workspace
                         window.location.href = '/workspace.html';
+                    } else {
+                        // Existing user with workspace data, go to dashboard
+                        window.location.href = '/dashboard.html';
                     }
                 } else {
                     // User not logged in, show login modal
@@ -755,15 +759,9 @@
                 if (data.session) {
                     showAlert('Login successful! Redirecting...', 'success');
                     setTimeout(() => {
-                        // Check if user has completed workspace setup
-                        const workspaceData = localStorage.getItem('workspaceData');
-                        if (workspaceData) {
-                            // Existing user, go to dashboard
-                            window.location.href = '/dashboard.html';
-                        } else {
-                            // New user, go to workspace setup
-                            window.location.href = '/workspace.html';
-                        }
+                        // Existing user login - clear new signup flag and go to dashboard
+                        localStorage.removeItem('isNewSignup');
+                        window.location.href = '/dashboard.html';
                     }, 1000);
                 }
             } catch (error) {
@@ -814,7 +812,8 @@
                     if (data.session) {
                         showAlert('Account created successfully! Redirecting...', 'success');
                         setTimeout(() => {
-                            // New signup always goes to workspace
+                            // New signup - set flag and go to workspace
+                            localStorage.setItem('isNewSignup', 'true');
                             window.location.href = '/workspace.html';
                         }, 1500);
                     } else {

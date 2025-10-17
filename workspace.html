@@ -391,6 +391,9 @@
             // Store workspace data in localStorage
             localStorage.setItem('workspaceData', JSON.stringify(workspaceData));
             
+            // Clear new signup flag since workspace is completed
+            localStorage.removeItem('isNewSignup');
+            
             // Redirect to dashboard
             window.location.href = 'dashboard.html';
         });
