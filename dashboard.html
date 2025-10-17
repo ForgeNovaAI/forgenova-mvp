@@ -32,6 +32,32 @@
       console.log('Auth display error:', e);
     }
   })();
+
+  // Auto-logout after 10 minutes of inactivity
+  let inactivityTimer;
+  const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes in milliseconds
+
+  function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+      // Show logout confirmation
+      if (confirm('You have been inactive for 10 minutes. Do you want to stay logged in?')) {
+        resetInactivityTimer();
+      } else {
+        // Logout user
+        window.ForgeAuth.signOut();
+      }
+    }, INACTIVITY_TIMEOUT);
+  }
+
+  // Track user activity
+  const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+  activityEvents.forEach(event => {
+    document.addEventListener(event, resetInactivityTimer, true);
+  });
+
+  // Initialize timer
+  resetInactivityTimer();
 </script>
 <meta charset="utf-8"/>
 <title>ForgeNova MVP — Strict Layout</title>

@@ -701,8 +701,15 @@
         async function checkAuth() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
-                // Redirect to dashboard if already logged in
-                window.location.href = '/workspace.html';
+                // Check if user has completed workspace setup
+                const workspaceData = localStorage.getItem('workspaceData');
+                if (workspaceData) {
+                    // User has completed workspace, go to dashboard
+                    window.location.href = '/dashboard.html';
+                } else {
+                    // New user, go to workspace setup
+                    window.location.href = '/workspace.html';
+                }
             }
         }
 
@@ -710,8 +717,15 @@
         function handleExploreTemplates() {
             supabaseClient.auth.getSession().then(({ data: { session } }) => {
                 if (session) {
-                    // User is logged in, go to dashboard
-                    window.location.href = '/workspace.html';
+                    // Check if user has completed workspace setup
+                    const workspaceData = localStorage.getItem('workspaceData');
+                    if (workspaceData) {
+                        // User has completed workspace, go to dashboard
+                        window.location.href = '/dashboard.html';
+                    } else {
+                        // New user, go to workspace setup
+                        window.location.href = '/workspace.html';
+                    }
                 } else {
                     // User not logged in, show login modal
                     openModal();
@@ -741,7 +755,15 @@
                 if (data.session) {
                     showAlert('Login successful! Redirecting...', 'success');
                     setTimeout(() => {
-                        window.location.href = '/workspace.html';
+                        // Check if user has completed workspace setup
+                        const workspaceData = localStorage.getItem('workspaceData');
+                        if (workspaceData) {
+                            // Existing user, go to dashboard
+                            window.location.href = '/dashboard.html';
+                        } else {
+                            // New user, go to workspace setup
+                            window.location.href = '/workspace.html';
+                        }
                     }, 1000);
                 }
             } catch (error) {
@@ -792,6 +814,7 @@
                     if (data.session) {
                         showAlert('Account created successfully! Redirecting...', 'success');
                         setTimeout(() => {
+                            // New signup always goes to workspace
                             window.location.href = '/workspace.html';
                         }, 1500);
                     } else {
