@@ -11,7 +11,7 @@
     <link rel="apple-touch-icon" href="assets/img/favicon-64.png">
     
     <!-- Supabase SDK -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
     <style>
         * {
@@ -35,6 +35,8 @@
             font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;
             color: var(--text);
             background: var(--bg);
+            min-height: 100vh;
+            overflow-y: auto;
         }
 
         /* Header */
@@ -166,9 +168,11 @@
         .modal-content {
             background: white;
             border-radius: 16px;
-            padding: 28px 32px;
+            padding: 24px 28px;
             width: 90%;
-            max-width: 400px;
+            max-width: 380px;
+            max-height: 90vh;
+            overflow-y: auto;
             box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
             position: relative;
             animation: slideUp 0.3s ease-out;
@@ -273,6 +277,35 @@
 
         .form-group {
             margin-bottom: 16px;
+        }
+
+        .name-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .name-row .form-group {
+            flex: 1;
+        }
+
+        .password-suggestions {
+            margin-top: 8px;
+        }
+
+        .suggest-password-btn {
+            background: none;
+            border: 1px solid #d1d5db;
+            color: #6b7280;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .suggest-password-btn:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
         }
 
         label {
@@ -586,19 +619,31 @@
             <!-- Signup Form -->
             <div id="signupTab" class="tab-content">
                 <form id="signupForm">
-                    <div class="form-group">
-                        <label for="signupName">Full name</label>
-                        <input type="text" id="signupName" required autocomplete="name" placeholder="John Doe">
+                    <div class="name-row">
+                        <div class="form-group">
+                            <input type="text" id="signupFirstName" name="firstName" required autocomplete="given-name" placeholder="First Name">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="signupLastName" name="lastName" required autocomplete="family-name" placeholder="Last Name">
+                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="signupEmail">Email address</label>
-                        <input type="email" id="signupEmail" required autocomplete="email" placeholder="you@example.com">
+                        <input type="text" id="signupCompany" name="company" required autocomplete="organization" placeholder="Company Name">
                     </div>
 
                     <div class="form-group">
-                        <label for="signupPassword">Password</label>
-                        <input type="password" id="signupPassword" required autocomplete="new-password" placeholder="••••••••">
+                        <input type="email" id="signupEmail" name="email" required autocomplete="email" placeholder="Email Address">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="password-wrapper">
+                            <input type="password" id="signupPassword" name="password" required autocomplete="new-password" placeholder="Password">
+                            <button type="button" class="password-toggle" onclick="togglePassword('signupPassword')">Show</button>
+                        </div>
+                        <div class="password-suggestions">
+                            <button type="button" class="suggest-password-btn" onclick="suggestPassword()">Suggest Password</button>
+                        </div>
                         <div class="password-requirements">
                             <ul>
                                 <li>At least 6 characters long</li>
@@ -607,8 +652,10 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="signupConfirmPassword">Confirm password</label>
-                        <input type="password" id="signupConfirmPassword" required autocomplete="new-password" placeholder="••••••••">
+                        <div class="password-wrapper">
+                            <input type="password" id="signupConfirmPassword" name="confirmPassword" required autocomplete="new-password" placeholder="Confirm Password">
+                            <button type="button" class="password-toggle" onclick="togglePassword('signupConfirmPassword')">Show</button>
+                        </div>
                     </div>
 
                     <button type="submit" class="btn-submit" id="signupBtn">
@@ -640,7 +687,7 @@
         </div>
     </div>
 
-    <script>
+<script>
         // Initialize Supabase
         const { createClient } = supabase;
         const SUPABASE_URL = "https://icbfadlizwwonymqdclb.supabase.co";
@@ -695,6 +742,40 @@
 
         function clearAlert() {
             document.getElementById('alertBox').innerHTML = '';
+        }
+
+        // Toggle password visibility
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const button = input.nextElementSibling;
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.textContent = 'Hide';
+            } else {
+                input.type = 'password';
+                button.textContent = 'Show';
+            }
+        }
+
+        // Suggest password function
+        function suggestPassword() {
+            const passwordInput = document.getElementById('signupPassword');
+            const confirmInput = document.getElementById('signupConfirmPassword');
+            
+            // Generate a secure password
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+            let password = '';
+            for (let i = 0; i < 12; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            
+            // Set the password in both fields
+            passwordInput.value = password;
+            confirmInput.value = password;
+            
+            // Show success message
+            showAlert('Password generated! Please save it securely.', 'success');
         }
 
         // Check if already logged in
@@ -776,7 +857,9 @@
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const fullName = document.getElementById('signupName').value;
+            const firstName = document.getElementById('signupFirstName').value;
+            const lastName = document.getElementById('signupLastName').value;
+            const company = document.getElementById('signupCompany').value;
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
             const confirmPassword = document.getElementById('signupConfirmPassword').value;
@@ -801,7 +884,10 @@
                     password,
                     options: {
                         data: {
-                            full_name: fullName
+                            first_name: firstName,
+                            last_name: lastName,
+                            company: company,
+                            full_name: `${firstName} ${lastName}`
                         }
                     }
                 });
@@ -865,7 +951,7 @@
 
         // Check auth on page load
         checkAuth();
-    </script>
+</script>
 </body>
 </html>
 
