@@ -288,25 +288,7 @@
             flex: 1;
         }
 
-        .password-suggestions {
-            margin-top: 8px;
-        }
 
-        .suggest-password-btn {
-            background: none;
-            border: 1px solid #d1d5db;
-            color: #6b7280;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .suggest-password-btn:hover {
-            background: #f9fafb;
-            border-color: #9ca3af;
-        }
 
         label {
             display: block;
@@ -328,6 +310,42 @@
         input:focus {
             outline: none;
             border-color: var(--brand);
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper input {
+            padding-right: 45px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px 8px;
+            transition: all 0.2s;
+            opacity: 0.6;
+            user-select: none;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .password-toggle:hover {
+            opacity: 1;
+            color: var(--brand);
+        }
+
+        .password-toggle svg {
+            width: 20px;
+            height: 20px;
         }
 
         .btn-submit {
@@ -400,23 +418,6 @@
             display: block;
         }
 
-        .password-requirements {
-            font-size: 12px;
-            color: var(--muted);
-            margin-top: 8px;
-            padding: 8px 12px;
-            background: #f8fafc;
-            border-radius: 6px;
-        }
-
-        .password-requirements ul {
-            margin: 4px 0 0 16px;
-            padding: 0;
-        }
-
-        .password-requirements li {
-            margin: 2px 0;
-        }
 
         @media (max-width: 768px) {
             header {
@@ -603,7 +604,15 @@
 
                     <div class="form-group">
                         <label for="loginPassword">Password</label>
-                        <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••">
+                        <div class="password-wrapper">
+                            <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••">
+                            <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                     <div style="text-align: right; margin-bottom: 16px;">
@@ -639,22 +648,24 @@
                     <div class="form-group">
                         <div class="password-wrapper">
                             <input type="password" id="signupPassword" name="password" required autocomplete="new-password" placeholder="Password">
-                            <button type="button" class="password-toggle" onclick="togglePassword('signupPassword')">Show</button>
-                        </div>
-                        <div class="password-suggestions">
-                            <button type="button" class="suggest-password-btn" onclick="suggestPassword()">Suggest Password</button>
-                        </div>
-                        <div class="password-requirements">
-                            <ul>
-                                <li>At least 6 characters long</li>
-                            </ul>
+                            <button type="button" class="password-toggle" onclick="togglePassword('signupPassword')">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <div class="password-wrapper">
                             <input type="password" id="signupConfirmPassword" name="confirmPassword" required autocomplete="new-password" placeholder="Confirm Password">
-                            <button type="button" class="password-toggle" onclick="togglePassword('signupConfirmPassword')">Show</button>
+                            <button type="button" class="password-toggle" onclick="togglePassword('signupConfirmPassword')">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
                         </div>
                     </div>
 
@@ -751,32 +762,13 @@
             
             if (input.type === 'password') {
                 input.type = 'text';
-                button.textContent = 'Hide';
+                button.style.opacity = '1';
             } else {
                 input.type = 'password';
-                button.textContent = 'Show';
+                button.style.opacity = '0.6';
             }
         }
 
-        // Suggest password function
-        function suggestPassword() {
-            const passwordInput = document.getElementById('signupPassword');
-            const confirmInput = document.getElementById('signupConfirmPassword');
-            
-            // Generate a secure password
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-            let password = '';
-            for (let i = 0; i < 12; i++) {
-                password += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            
-            // Set the password in both fields
-            passwordInput.value = password;
-            confirmInput.value = password;
-            
-            // Show success message
-            showAlert('Password generated! Please save it securely.', 'success');
-        }
 
         // Check if already logged in
         async function checkAuth() {
@@ -911,7 +903,19 @@
                 }
             } catch (error) {
                 console.error('Signup error:', error);
-                showAlert(error.message || 'Failed to create account. Please try again.');
+                
+                // Check for duplicate email error
+                if (error.message && (
+                    error.message.includes('already registered') || 
+                    error.message.includes('User already registered') ||
+                    error.message.includes('already exists') ||
+                    error.message.includes('duplicate')
+                )) {
+                    showAlert('This email is already registered. Use a different email or login to your account.');
+                } else {
+                    showAlert(error.message || 'Failed to create account. Please try again.');
+                }
+                
                 signupBtn.disabled = false;
                 signupBtn.innerHTML = 'Create account';
             }
