@@ -71,7 +71,7 @@ async function redirectIfAuthenticated() {
 }
 
 /**
- * Sign out user and redirect to homepage
+ * Sign out user and redirect to ForgeNova website
  */
 async function signOut() {
     const client = getSupabaseClient();
@@ -85,8 +85,8 @@ async function signOut() {
         
         console.log('👋 Signed out successfully');
         
-        // Redirect to homepage (forgenova.ai)
-        window.location.href = 'https://forgenova.ai';
+        // Redirect to ForgeNova website
+        window.location.href = 'https://forgenova.ai/';
     } catch (error) {
         console.error('Sign out error:', error);
         alert('Failed to sign out. Please try again.');
@@ -110,31 +110,250 @@ function onAuthStateChange(callback) {
 }
 
 /**
- * Display user info in the UI
+ * Display user info as a clickable avatar with dropdown
  * @param {string} elementId - ID of element to display user info
  */
 async function displayUserInfo(elementId = 'userInfo') {
     const user = await getCurrentUser();
     const element = document.getElementById(elementId);
     
-    if (!element || !user) {
+    if (!element) {
+        console.error('❌ User info element not found:', elementId);
         return;
     }
     
+    if (!user) {
+        console.error('❌ No user authenticated');
+        return;
+    }
+    
+    console.log('✅ Displaying avatar for:', user.email);
+    
     const userName = user.user_metadata?.full_name || user.email.split('@')[0];
     const userEmail = user.email;
+    const initials = userName.charAt(0).toUpperCase();
     
-    element.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--brand); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;">
-                ${userName.charAt(0).toUpperCase()}
-            </div>
-            <div style="display: flex; flex-direction: column;">
-                <span style="font-weight: 600; font-size: 14px;">${userName}</span>
-                <span style="color: var(--muted); font-size: 12px;">${userEmail}</span>
+    // Create avatar button only (dropdown will be appended to body)
+    const avatarHTML = `
+        <div id="avatarContainer" style="position: relative; display: inline-block;">
+            <!-- Avatar Button -->
+            <button 
+                id="avatarBtn"
+                class="avatar-btn" 
+                style="
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, var(--brand), #ff8533);
+                    color: white;
+                    border: 2px solid #fff;
+                    font-weight: 700;
+                    font-size: 16px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                    padding: 0;
+                "
+                title="${userName}"
+            >
+                ${initials}
+            </button>
+        </div>
+    `;
+    
+    // Create dropdown menu HTML (will be appended to body)
+    const dropdownHTML = `
+        <div 
+            id="userDropdown"
+            style="
+                display: none;
+                position: fixed;
+                background: white;
+                border: 1px solid #e5e7eb;
+                border-radius: 12px;
+                box-shadow: 0 10px 28px rgba(0,0,0,0.12);
+                width: 240px;
+                z-index: 9999;
+                overflow: hidden;
+            "
+        >
+                <!-- User Info Header -->
+                <div style="
+                    padding: 14px 16px;
+                    border-bottom: 1px solid #e5e7eb;
+                    background: #f9fafb;
+                ">
+                    <div style="
+                        font-weight: 600;
+                        color: #111827;
+                        font-size: 14px;
+                        margin-bottom: 2px;
+                    ">${userName}</div>
+                    <div style="
+                        color: #6b7280;
+                        font-size: 12px;
+                        word-break: break-all;
+                    ">${userEmail}</div>
+                </div>
+                
+                <!-- Menu Items -->
+                <div style="padding: 8px 0;">
+                    <a href="#" class="dropdown-link" id="profileLink"
+                       style="
+                        display: block;
+                        padding: 10px 16px;
+                        color: #374151;
+                        text-decoration: none;
+                        font-size: 14px;
+                        font-weight: 500;
+                    ">
+                        👤 Profile
+                    </a>
+                    
+                    <a href="/workspace.html" class="dropdown-link"
+                       style="
+                        display: block;
+                        padding: 10px 16px;
+                        color: #374151;
+                        text-decoration: none;
+                        font-size: 14px;
+                        font-weight: 500;
+                    ">
+                        🏢 Workspace
+                    </a>
+                    
+                    <a href="/change-password.html" class="dropdown-link"
+                       style="
+                        display: block;
+                        padding: 10px 16px;
+                        color: #374151;
+                        text-decoration: none;
+                        font-size: 14px;
+                        font-weight: 500;
+                    ">
+                        🔐 Change Password
+                    </a>
+                </div>
+                
+                <!-- Signout Button -->
+                <div style="
+                    padding: 8px;
+                    border-top: 1px solid #e5e7eb;
+                    background: #f9fafb;
+                ">
+                    <button id="signOutBtn"
+                        style="
+                            width: 100%;
+                            padding: 10px 14px;
+                            background: #fee2e2;
+                            color: #991b1b;
+                            border: 1px solid #fecaca;
+                            border-radius: 8px;
+                            font-weight: 600;
+                            font-size: 13px;
+                            cursor: pointer;
+                        "
+                    >
+                        🚪 Logout
+                    </button>
+                </div>
             </div>
         </div>
     `;
+    
+    // Set avatar HTML
+    element.innerHTML = avatarHTML;
+    
+    // Remove any existing dropdown from body
+    const existingDropdown = document.getElementById('userDropdown');
+    if (existingDropdown) {
+        existingDropdown.remove();
+    }
+    
+    // Append dropdown to body (portal-like behavior)
+    document.body.insertAdjacentHTML('beforeend', dropdownHTML);
+    
+    // Add event listeners after DOM is updated
+    setTimeout(() => {
+        const avatarBtn = document.getElementById('avatarBtn');
+        const avatarContainer = document.getElementById('avatarContainer');
+        const dropdown = document.getElementById('userDropdown');
+        const signOutBtn = document.getElementById('signOutBtn');
+        const dropdownLinks = document.querySelectorAll('.dropdown-link');
+        
+        // Function to position dropdown below avatar button
+        function positionDropdown() {
+            if (avatarBtn && dropdown) {
+                const rect = avatarBtn.getBoundingClientRect();
+                dropdown.style.top = `${rect.bottom + 8}px`; // 8px gap below button
+                dropdown.style.right = `${window.innerWidth - rect.right}px`; // Align to right edge
+            }
+        }
+        
+        // Toggle dropdown on avatar click
+        if (avatarBtn && dropdown) {
+            avatarBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isVisible = dropdown.style.display === 'block';
+                if (isVisible) {
+                    dropdown.style.display = 'none';
+                } else {
+                    positionDropdown();
+                    dropdown.style.display = 'block';
+                }
+            });
+        }
+        
+        // Sign out button
+        if (signOutBtn) {
+            signOutBtn.addEventListener('click', function() {
+                window.ForgeAuth.signOut();
+            });
+        }
+        
+        // Handle Profile link (just close dropdown for now)
+        const profileLink = document.getElementById('profileLink');
+        if (profileLink) {
+            profileLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                dropdown.style.display = 'none';
+                // Profile functionality can be added here later
+                console.log('Profile clicked - feature coming soon');
+            });
+        }
+        
+        // Close dropdown when clicking menu links
+        dropdownLinks.forEach(link => {
+            if (link.id !== 'profileLink') {
+                link.addEventListener('click', function() {
+                    dropdown.style.display = 'none';
+                });
+            }
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            if (dropdown && !event.target.closest('#avatarBtn') && !event.target.closest('#userDropdown')) {
+                dropdown.style.display = 'none';
+            }
+        });
+        
+        // Reposition dropdown on window resize
+        window.addEventListener('resize', function() {
+            if (dropdown && dropdown.style.display === 'block') {
+                positionDropdown();
+            }
+        });
+        
+        // Reposition on scroll (in case header is sticky)
+        window.addEventListener('scroll', function() {
+            if (dropdown && dropdown.style.display === 'block') {
+                positionDropdown();
+            }
+        });
+    }, 0);
 }
 
 // Export functions for use in other scripts

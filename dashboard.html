@@ -16,8 +16,9 @@
 <!-- Auth Helper -->
 <script src="assets/js/auth.js"></script>
 <script>
-  // Check if user has completed workspace setup
-  (async function() {
+  // Initialize avatar display
+  async function initializeAvatar() {
+    // Check if user has completed workspace setup
     const workspaceData = localStorage.getItem('workspaceData');
     if (!workspaceData) {
       // No workspace data, redirect to workspace setup
@@ -28,10 +29,29 @@
     // Display user info in header
     try {
       await window.ForgeAuth.displayUserInfo('userInfo');
+      console.log('✅ Avatar loaded successfully');
     } catch (e) {
-      console.log('Auth display error:', e);
+      console.error('❌ Auth display error:', e);
     }
-  })();
+  }
+  
+  // Wait for DOM to be ready before initializing
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeAvatar);
+  } else {
+    // DOM already loaded, initialize immediately
+    initializeAvatar();
+  }
+  
+  // Fallback: Also ensure avatar loads after window is fully loaded
+  window.addEventListener('load', function() {
+    // Check if avatar was already loaded
+    const avatarBtn = document.getElementById('avatarBtn');
+    if (!avatarBtn) {
+      console.log('🔄 Retrying avatar load...');
+      initializeAvatar();
+    }
+  });
 
   // Auto-logout after 10 minutes of inactivity
   let inactivityTimer;
@@ -40,11 +60,9 @@
   function resetInactivityTimer() {
     clearTimeout(inactivityTimer);
     inactivityTimer = setTimeout(() => {
-      // Show logout confirmation
       if (confirm('You have been inactive for 10 minutes. Do you want to stay logged in?')) {
         resetInactivityTimer();
       } else {
-        // Logout user
         window.ForgeAuth.signOut();
       }
     }, INACTIVITY_TIMEOUT);
@@ -211,7 +229,6 @@ main, .panel { min-width: 0; }
 <span aria-live="polite" class="muted" id="status"></span>
 <div style="margin-left: auto; display: flex; gap: 12px; align-items: center;">
 <div id="userInfo"></div>
-<button class="btn" id="logoutBtn" onclick="window.ForgeAuth.signOut()">🚪 Logout</button>
 </div>
 </div>
 </header>
