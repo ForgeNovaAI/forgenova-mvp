@@ -60,11 +60,9 @@
   function resetInactivityTimer() {
     clearTimeout(inactivityTimer);
     inactivityTimer = setTimeout(() => {
-      if (confirm('You have been inactive for 10 minutes. Do you want to stay logged in?')) {
-        resetInactivityTimer();
-      } else {
-        window.ForgeAuth.signOut();
-      }
+      console.log('🕐 User inactive for 10 minutes - auto logging out');
+      alert('You have been inactive for 10 minutes. You will be logged out for security.');
+      window.ForgeAuth.signOut();
     }, INACTIVITY_TIMEOUT);
   }
 

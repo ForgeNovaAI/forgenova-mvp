@@ -241,6 +241,32 @@
             justify-content: center;
             gap: 8px;
         }
+
+        .password-requirements {
+            background: #f9fafb;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        .password-requirements h3 {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+
+        .password-requirements ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        .password-requirements li {
+            color: var(--muted);
+            margin-bottom: 2px;
+        }
     </style>
 </head>
 <body>
@@ -270,6 +296,15 @@
                 <div class="password-wrapper">
                     <input type="password" id="password" name="password" required autocomplete="new-password" placeholder="••••••••" data-form-type="other">
                     <button type="button" class="password-toggle" onclick="togglePassword('password')">👁️</button>
+                </div>
+                <div class="password-requirements">
+                    <h3>Password Requirements:</h3>
+                    <ul>
+                        <li>At least 8 characters long</li>
+                        <li>Contains uppercase and lowercase letters</li>
+                        <li>Contains at least one number</li>
+                        <li>Contains at least one special character</li>
+                    </ul>
                 </div>
             </div>
 
@@ -314,6 +349,29 @@
             }
         }
 
+        // Password validation function
+        function validatePassword(password) {
+            const minLength = password.length >= 8;
+            const hasUpper = /[A-Z]/.test(password);
+            const hasLower = /[a-z]/.test(password);
+            const hasNumber = /\d/.test(password);
+            const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+            if (!minLength) {
+                return 'Password must be at least 8 characters long';
+            }
+            if (!hasUpper || !hasLower) {
+                return 'Password must contain uppercase and lowercase letters';
+            }
+            if (!hasNumber) {
+                return 'Password must contain at least one number';
+            }
+            if (!hasSpecial) {
+                return 'Password must contain at least one special character';
+            }
+            return null;
+        }
+
         // Check if user is already logged in
         async function checkAuth() {
             const { data: { session } } = await supabaseClient.auth.getSession();
@@ -349,8 +407,10 @@
                 return false;
             }
             
-            if (password.length < 6) {
-                showAlert('Password must be at least 6 characters long');
+            // Enhanced password validation
+            const passwordError = validatePassword(password);
+            if (passwordError) {
+                showAlert(passwordError);
                 return false;
             }
             

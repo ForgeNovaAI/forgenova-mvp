@@ -85,8 +85,8 @@ async function signOut() {
         
         console.log('👋 Signed out successfully');
         
-        // Redirect to ForgeNova website
-        window.location.href = 'https://forgenova.ai/';
+        // Redirect to login page
+        window.location.href = '/login.html';
     } catch (error) {
         console.error('Sign out error:', error);
         alert('Failed to sign out. Please try again.');
