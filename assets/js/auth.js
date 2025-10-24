@@ -258,7 +258,7 @@ async function displayUserInfo(elementId = 'userInfo') {
                     >
                         🚪 Logout
                     </button>
-                </div>
+            </div>
             </div>
         </div>
     `;
@@ -313,14 +313,14 @@ async function displayUserInfo(elementId = 'userInfo') {
             });
         }
         
-        // Handle Profile link (just close dropdown for now)
+        // Handle Profile link - open profile page in same window
         const profileLink = document.getElementById('profileLink');
         if (profileLink) {
             profileLink.addEventListener('click', function(e) {
                 e.preventDefault();
                 dropdown.style.display = 'none';
-                // Profile functionality can be added here later
-                console.log('Profile clicked - feature coming soon');
+                // Navigate to profile page in same window
+                window.location.href = '/profile.html';
             });
         }
         

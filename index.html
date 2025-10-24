@@ -415,6 +415,84 @@
             border: 1px solid #bbf7d0;
         }
 
+        /* Email Already Registered Modal */
+        .email-exists-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .email-exists-modal.active {
+            display: flex;
+        }
+
+        .email-exists-content {
+            background: white;
+            border-radius: 16px;
+            padding: 0;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            text-align: center;
+        }
+
+        .email-exists-header {
+            padding: 30px 30px 20px 30px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .email-exists-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .email-exists-body {
+            padding: 20px 30px;
+        }
+
+        .email-exists-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 12px;
+        }
+
+        .email-exists-message {
+            font-size: 16px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .email-exists-footer {
+            padding: 20px 30px 30px 30px;
+        }
+
+        .email-exists-btn {
+            background: var(--brand);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .email-exists-btn:hover {
+            background: #e55a00;
+        }
+
         .spinner {
             display: inline-block;
             width: 16px;
@@ -588,7 +666,7 @@
         <div class="logo">
             <img src="assets/img/ForgeNova Final Logo.png" alt="ForgeNovaAI" style="height:80px;width:auto"/>
         </div>
-        <button class="btn-login" onclick="openModal('signup')">Login / Sign Up</button>
+        <button class="btn-login" onclick="openModal('login')">Login / Sign Up</button>
     </header>
 
     <!-- Hero Section -->
@@ -733,7 +811,25 @@
         </div>
     </div>
 
-<script>
+    <!-- Email Already Registered Modal -->
+    <div id="emailExistsModal" class="email-exists-modal">
+        <div class="email-exists-content">
+            <div class="email-exists-header">
+                <div class="email-exists-logo">
+                    <img src="assets/img/ForgeNova Final Logo.png" alt="ForgeNova Logo" style="height: 60px; width: auto;">
+                </div>
+            </div>
+            <div class="email-exists-body">
+                <h2 class="email-exists-title">Email Already Registered</h2>
+                <p class="email-exists-message">Please log in or sign up with a new email.</p>
+            </div>
+            <div class="email-exists-footer">
+                <button class="email-exists-btn" onclick="closeEmailExistsModal()">Login / Sign Up</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
         // Initialize Supabase
         const { createClient } = supabase;
         const SUPABASE_URL = "https://icbfadlizwwonymqdclb.supabase.co";
@@ -802,6 +898,17 @@
 
         function clearAlert() {
             document.getElementById('alertBox').innerHTML = '';
+        }
+
+        // Email Already Registered Modal Functions
+        function showEmailExistsModal() {
+            document.getElementById('emailExistsModal').classList.add('active');
+        }
+
+        function closeEmailExistsModal() {
+            document.getElementById('emailExistsModal').classList.remove('active');
+            // Close the auth modal as well
+            document.getElementById('authModal').classList.remove('active');
         }
 
         // Toggle password visibility
@@ -960,8 +1067,20 @@
 
                 if (error) throw error;
 
+                // Check if user already exists (Supabase returns user with identities: [] for existing users)
+                if (data.user && data.user.identities && data.user.identities.length === 0) {
+                    // Email already exists
+                    console.log('Email already exists - user returned with no identities');
+                    document.getElementById('authModal').classList.remove('active');
+                    showEmailExistsModal();
+                    signupBtn.disabled = false;
+                    signupBtn.innerHTML = 'Create account';
+                    return;
+                }
+
                 if (data.user) {
                     if (data.session) {
+                        // User is auto-confirmed (email confirmation disabled)
                         showAlert('Account created successfully! Redirecting...', 'success');
                         setTimeout(() => {
                             // New signup - set flag and go to workspace
@@ -969,6 +1088,7 @@
                             window.location.href = '/workspace.html';
                         }, 1500);
                     } else {
+                        // Email confirmation required - Resend email will be sent
                         showAlert('Account created! Please check your email to confirm your account.', 'success');
                         setTimeout(() => {
                             switchTab('login');
@@ -977,15 +1097,24 @@
                 }
             } catch (error) {
                 console.error('Signup error:', error);
+                console.log('Error message:', error.message);
+                console.log('Error code:', error.code);
                 
                 // Check for duplicate email error
-                if (error.message && (
+                if ((error.message && (
                     error.message.includes('already registered') || 
                     error.message.includes('User already registered') ||
                     error.message.includes('already exists') ||
-                    error.message.includes('duplicate')
-                )) {
-                    showAlert('This email is already registered. Use a different email or login to your account.');
+                    error.message.includes('duplicate') ||
+                    error.message.includes('already been registered') ||
+                    error.message.includes('email address is already registered') ||
+                    error.message.includes('User with this email already exists') ||
+                    error.message.includes('email already in use') ||
+                    error.message.includes('Email already exists')
+                )) || error.code === 'signup_disabled' || error.code === 'email_address_not_authorized') {
+                    // Close the auth modal and show the email exists modal
+                    document.getElementById('authModal').classList.remove('active');
+                    showEmailExistsModal();
                 } else {
                     showAlert(error.message || 'Failed to create account. Please try again.');
                 }

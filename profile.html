@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - ForgeNova</title>
+    
+    <!-- Supabase SDK -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <style>
+        :root {
+            --bg: #f7f9fc;
+            --card: #fff;
+            --text: #0f172a;
+            --muted: #475569;
+            --border: #e5e7eb;
+            --brand: #ff6a00;
+            --error: #dc2626;
+            --success: #16a34a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo img {
+            height: 60px;
+            width: auto;
+        }
+
+        .back-btn {
+            background: var(--brand);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #e55a00;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 30px;
+        }
+
+        .profile-header {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--brand), #ff8533);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 700;
+            border: 3px solid #8b5cf6;
+        }
+
+        .profile-info h1 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+
+        .profile-info .title {
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+
+        .profile-info .location {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .profile-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+        }
+
+        .detail-section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .detail-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .detail-value {
+            color: var(--text);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .detail-item.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--muted);
+        }
+
+        .error {
+            background: #fee2e2;
+            color: var(--error);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #fecaca;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 16px;
+            }
+            
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .profile-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <img src="assets/img/ForgeNova Final Logo.png" alt="ForgeNova Logo">
+            </div>
+            <a href="/dashboard.html" class="back-btn">← Back to Dashboard</a>
+        </div>
+
+        <h1 class="page-title">My Profile</h1>
+
+        <div id="loading" class="loading">
+            Loading profile...
+        </div>
+
+        <div id="error" class="error" style="display: none;">
+            Failed to load profile. Please try again.
+        </div>
+
+        <div id="profileContent" style="display: none;">
+            <div class="profile-header">
+                <div class="avatar" id="userAvatar">
+                    <!-- Avatar will be generated here -->
+                </div>
+                <div class="profile-info">
+                    <h1 id="userName">Loading...</h1>
+                    <div class="title" id="userTitle">Team Manager</div>
+                    <div class="location" id="userLocation">Leeds, United Kingdom</div>
+                </div>
+            </div>
+
+            <div class="profile-sections">
+                <div class="detail-section">
+                    <h3>Personal Information</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">First Name</span>
+                            <span class="detail-value" id="firstName">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Last Name</span>
+                            <span class="detail-value" id="lastName">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Email address</span>
+                            <span class="detail-value" id="email">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Phone</span>
+                            <span class="detail-value" id="phone">-</span>
+                        </div>
+                        <div class="detail-item full-width">
+                            <span class="detail-label">Bio</span>
+                            <span class="detail-value" id="bio">Team Manager</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Address</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Country</span>
+                            <span class="detail-value" id="country">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">City/State</span>
+                            <span class="detail-value" id="cityState">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Postal Code</span>
+                            <span class="detail-value" id="postalCode">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">TAX ID</span>
+                            <span class="detail-value" id="taxId">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createClient } = supabase;
+        const SUPABASE_URL = "https://icbfadlizwwonymqdclb.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljYmZhZGxpend3b255bXFkY2xiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgwMzU4OTUsImV4cCI6MjA3MzYxMTg5NX0.sQNGjFdC-WM0nSdGucgx3DelUJ5KJXh6S8J54xWUEu0";
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Check authentication
+        async function checkAuth() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                window.location.href = '/login.html';
+                return false;
+            }
+            return session;
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Load profile data
+        async function loadProfile() {
+            try {
+                const session = await checkAuth();
+                if (!session) return;
+
+                const user = session.user;
+                const workspaceData = JSON.parse(localStorage.getItem('workspaceData') || '{}');
+
+                // Hide loading, show content
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('profileContent').style.display = 'block';
+
+                // Set avatar
+                const userName = user.user_metadata?.full_name || user.email.split('@')[0];
+                const initials = userName.charAt(0).toUpperCase();
+                document.getElementById('userAvatar').textContent = initials;
+
+                // Set basic info
+                document.getElementById('userName').textContent = userName;
+                document.getElementById('userTitle').textContent = workspaceData.industry ? `${workspaceData.industry} Manager` : 'Team Manager';
+                document.getElementById('userLocation').textContent = workspaceData.timezone || 'Leeds, United Kingdom';
+
+                // Set personal information
+                const fullName = user.user_metadata?.full_name || userName;
+                const nameParts = fullName.split(' ');
+                document.getElementById('firstName').textContent = nameParts[0] || '-';
+                document.getElementById('lastName').textContent = nameParts.slice(1).join(' ') || '-';
+                document.getElementById('email').textContent = user.email;
+                document.getElementById('phone').textContent = user.user_metadata?.phone || '+09 345 346 46';
+                document.getElementById('bio').textContent = workspaceData.industry ? `${workspaceData.industry} Manager` : 'Team Manager';
+
+                // Set address information (using workspace data)
+                document.getElementById('country').textContent = workspaceData.country || 'United Kingdom';
+                document.getElementById('cityState').textContent = workspaceData.cityState || 'Leeds, East London';
+                document.getElementById('postalCode').textContent = workspaceData.postalCode || 'ERT 2354';
+                document.getElementById('taxId').textContent = workspaceData.taxId || 'AS45645756';
+
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+
+        // Initialize page
+        loadProfile();
+    </script>
+</body>
+</html>

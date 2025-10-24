@@ -221,6 +221,84 @@
             border: 1px solid #bbf7d0;
         }
 
+        /* Email Already Registered Modal */
+        .email-exists-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .email-exists-modal.active {
+            display: flex;
+        }
+
+        .email-exists-content {
+            background: white;
+            border-radius: 16px;
+            padding: 0;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            text-align: center;
+        }
+
+        .email-exists-header {
+            padding: 30px 30px 20px 30px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .email-exists-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .email-exists-body {
+            padding: 20px 30px;
+        }
+
+        .email-exists-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 12px;
+        }
+
+        .email-exists-message {
+            font-size: 16px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .email-exists-footer {
+            padding: 20px 30px 30px 30px;
+        }
+
+        .email-exists-btn {
+            background: var(--brand);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .email-exists-btn:hover {
+            background: #e55a00;
+        }
+
         .spinner {
             display: inline-block;
             width: 16px;
@@ -326,6 +404,24 @@
         <p class="link-text">
             Already have an account? <a href="login.html">Sign in</a>
         </p>
+    </div>
+
+    <!-- Email Already Registered Modal -->
+    <div id="emailExistsModal" class="email-exists-modal">
+        <div class="email-exists-content">
+            <div class="email-exists-header">
+                <div class="email-exists-logo">
+                    <img src="assets/img/ForgeNova Final Logo.png" alt="ForgeNova Logo" style="height: 60px; width: auto;">
+                </div>
+            </div>
+            <div class="email-exists-body">
+                <h2 class="email-exists-title">Email Already Registered</h2>
+                <p class="email-exists-message">Please log in or sign up with a new email.</p>
+            </div>
+            <div class="email-exists-footer">
+                <button class="email-exists-btn" onclick="closeEmailExistsModal()">Login / Sign Up</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -449,16 +545,26 @@
                     throw error;
                 }
 
+                // Check if user already exists (Supabase returns user with identities: [] for existing users)
+                if (data.user && data.user.identities && data.user.identities.length === 0) {
+                    // Email already exists
+                    console.log('Email already exists - user returned with no identities');
+                    showEmailExistsModal();
+                    signupBtn.disabled = false;
+                    signupBtn.innerHTML = 'Create account';
+                    return;
+                }
+
                 if (data.user) {
                     // Check if email confirmation is required
                     if (data.session) {
-                        // User is auto-confirmed, redirect to dashboard
+                        // User is auto-confirmed (email confirmation disabled)
                         showAlert('Account created successfully! Redirecting...', 'success');
                         setTimeout(() => {
                             window.location.href = '/dashboard.html';
                         }, 1500);
                     } else {
-                        // Email confirmation required
+                        // Email confirmation required - Resend email will be sent
                         showAlert('Account created! Please check your email to confirm your account before signing in.', 'success');
                         setTimeout(() => {
                             window.location.href = '/login.html';
@@ -467,7 +573,26 @@
                 }
             } catch (error) {
                 console.error('Signup error:', error);
-                showAlert(error.message || 'Failed to create account. Please try again.');
+                console.log('Error message:', error.message);
+                console.log('Error code:', error.code);
+                
+                // Check for duplicate email error
+                if ((error.message && (
+                    error.message.includes('already registered') || 
+                    error.message.includes('User already registered') ||
+                    error.message.includes('already exists') ||
+                    error.message.includes('duplicate') ||
+                    error.message.includes('already been registered') ||
+                    error.message.includes('email address is already registered') ||
+                    error.message.includes('User with this email already exists') ||
+                    error.message.includes('email already in use') ||
+                    error.message.includes('Email already exists')
+                )) || error.code === 'signup_disabled' || error.code === 'email_address_not_authorized') {
+                    // Show the email exists modal
+                    showEmailExistsModal();
+                } else {
+                    showAlert(error.message || 'Failed to create account. Please try again.');
+                }
                 
                 // Re-enable button
                 signupBtn.disabled = false;
@@ -477,6 +602,17 @@
 
         // Check auth on page load
         checkAuth();
+
+        // Email Already Registered Modal Functions
+        function showEmailExistsModal() {
+            document.getElementById('emailExistsModal').classList.add('active');
+        }
+
+        function closeEmailExistsModal() {
+            document.getElementById('emailExistsModal').classList.remove('active');
+            // Redirect to login page
+            window.location.href = '/login.html';
+        }
     </script>
 </body>
 </html>
