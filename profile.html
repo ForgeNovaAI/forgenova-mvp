@@ -255,8 +255,12 @@
                             <span class="detail-value" id="lastName">-</span>
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">Email Address</span>
+                            <span class="detail-label">Email address</span>
                             <span class="detail-value" id="email">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Phone</span>
+                            <span class="detail-value" id="phone">-</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Company</span>
@@ -266,23 +270,27 @@
                 </div>
 
                 <div class="detail-section">
-                    <h3>Workspace Information</h3>
+                    <h3>Address</h3>
                     <div class="detail-grid">
-                        <div class="detail-item">
-                            <span class="detail-label">Workspace Name</span>
-                            <span class="detail-value" id="workspaceName">-</span>
+                        <div class="detail-item full-width">
+                            <span class="detail-label">Street Address</span>
+                            <span class="detail-value" id="streetAddress">-</span>
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">Industry</span>
-                            <span class="detail-value" id="industry">-</span>
+                            <span class="detail-label">City</span>
+                            <span class="detail-value" id="city">-</span>
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">Company Size</span>
-                            <span class="detail-value" id="companySize">-</span>
+                            <span class="detail-label">State</span>
+                            <span class="detail-value" id="state">-</span>
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">Timezone</span>
-                            <span class="detail-value" id="timezone">-</span>
+                            <span class="detail-label">Country</span>
+                            <span class="detail-value" id="country">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Postal Code</span>
+                            <span class="detail-value" id="postalCode">-</span>
                         </div>
                     </div>
                 </div>
@@ -348,13 +356,15 @@
                 document.getElementById('firstName').textContent = user.user_metadata?.first_name || nameParts[0] || '-';
                 document.getElementById('lastName').textContent = user.user_metadata?.last_name || nameParts.slice(1).join(' ') || '-';
                 document.getElementById('email').textContent = user.email;
+                document.getElementById('phone').textContent = user.user_metadata?.phone || '-';
                 document.getElementById('company').textContent = user.user_metadata?.company || '-';
 
-                // Set workspace information
-                document.getElementById('workspaceName').textContent = workspaceData.name || '-';
-                document.getElementById('industry').textContent = workspaceData.industry || '-';
-                document.getElementById('companySize').textContent = workspaceData.companySize || '-';
-                document.getElementById('timezone').textContent = workspaceData.timezone || '-';
+                // Set address information
+                document.getElementById('streetAddress').textContent = user.user_metadata?.street_address || '-';
+                document.getElementById('city').textContent = user.user_metadata?.city || '-';
+                document.getElementById('state').textContent = user.user_metadata?.state || '-';
+                document.getElementById('country').textContent = user.user_metadata?.country || '-';
+                document.getElementById('postalCode').textContent = user.user_metadata?.postal_code || '-';
 
             } catch (error) {
                 console.error('Error loading profile:', error);

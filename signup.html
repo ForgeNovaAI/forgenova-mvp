@@ -365,8 +365,43 @@
             </div>
 
             <div class="form-group">
+                <label for="company">Company name</label>
+                <input type="text" id="company" name="company" required autocomplete="organization" placeholder="Your Company">
+            </div>
+
+            <div class="form-group">
                 <label for="email">Email address</label>
                 <input type="email" id="email" name="email" required autocomplete="email" placeholder="you@example.com">
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone number (Optional)</label>
+                <input type="tel" id="phone" name="phone" autocomplete="tel" placeholder="+1 234 567 8900">
+            </div>
+
+            <div class="form-group">
+                <label for="streetAddress">Street address (Optional)</label>
+                <input type="text" id="streetAddress" name="streetAddress" autocomplete="street-address" placeholder="123 Main St">
+            </div>
+
+            <div class="form-group">
+                <label for="city">City (Optional)</label>
+                <input type="text" id="city" name="city" autocomplete="address-level2" placeholder="New York">
+            </div>
+
+            <div class="form-group">
+                <label for="state">State (Optional)</label>
+                <input type="text" id="state" name="state" autocomplete="address-level1" placeholder="NY">
+            </div>
+
+            <div class="form-group">
+                <label for="country">Country (Optional)</label>
+                <input type="text" id="country" name="country" autocomplete="country-name" placeholder="United States">
+            </div>
+
+            <div class="form-group">
+                <label for="postalCode">Postal code (Optional)</label>
+                <input type="text" id="postalCode" name="postalCode" autocomplete="postal-code" placeholder="10001">
             </div>
 
             <div class="form-group">
@@ -522,9 +557,21 @@
             }
             
             const fullName = document.getElementById('fullName').value;
+            const company = document.getElementById('company').value;
             const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const streetAddress = document.getElementById('streetAddress').value;
+            const city = document.getElementById('city').value;
+            const state = document.getElementById('state').value;
+            const country = document.getElementById('country').value;
+            const postalCode = document.getElementById('postalCode').value;
             const password = document.getElementById('password').value;
             const signupBtn = document.getElementById('signupBtn');
+            
+            // Split full name into first and last name
+            const nameParts = fullName.trim().split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
             
             // Disable button and show loading
             signupBtn.disabled = true;
@@ -536,7 +583,16 @@
                     password,
                     options: {
                         data: {
-                            full_name: fullName
+                            full_name: fullName,
+                            first_name: firstName,
+                            last_name: lastName,
+                            company: company,
+                            phone: phone || null,
+                            street_address: streetAddress || null,
+                            city: city || null,
+                            state: state || null,
+                            country: country || null,
+                            postal_code: postalCode || null
                         }
                     }
                 });

@@ -750,6 +750,32 @@
                     </div>
 
                     <div class="form-group">
+                        <input type="tel" id="signupPhone" name="phone" autocomplete="tel" placeholder="Phone Number (Optional)">
+                    </div>
+
+                    <div class="form-group">
+                        <input type="text" id="signupStreetAddress" name="streetAddress" autocomplete="street-address" placeholder="Street Address (Optional)">
+                    </div>
+
+                    <div class="name-row">
+                        <div class="form-group">
+                            <input type="text" id="signupCity" name="city" autocomplete="address-level2" placeholder="City (Optional)">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="signupState" name="state" autocomplete="address-level1" placeholder="State (Optional)">
+                        </div>
+                    </div>
+
+                    <div class="name-row">
+                        <div class="form-group">
+                            <input type="text" id="signupCountry" name="country" autocomplete="country-name" placeholder="Country (Optional)">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="signupPostalCode" name="postalCode" autocomplete="postal-code" placeholder="Postal Code (Optional)">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
                         <div class="password-wrapper">
                             <input type="password" id="signupPassword" name="password" required autocomplete="new-password" placeholder="Password" data-form-type="other">
                             <button type="button" class="password-toggle" onclick="togglePassword('signupPassword')">
@@ -1032,6 +1058,12 @@
             const lastName = document.getElementById('signupLastName').value;
             const company = document.getElementById('signupCompany').value;
             const email = document.getElementById('signupEmail').value;
+            const phone = document.getElementById('signupPhone').value;
+            const streetAddress = document.getElementById('signupStreetAddress').value;
+            const city = document.getElementById('signupCity').value;
+            const state = document.getElementById('signupState').value;
+            const country = document.getElementById('signupCountry').value;
+            const postalCode = document.getElementById('signupPostalCode').value;
             const password = document.getElementById('signupPassword').value;
             const confirmPassword = document.getElementById('signupConfirmPassword').value;
             const signupBtn = document.getElementById('signupBtn');
@@ -1060,7 +1092,13 @@
                             first_name: firstName,
                             last_name: lastName,
                             company: company,
-                            full_name: `${firstName} ${lastName}`
+                            full_name: `${firstName} ${lastName}`,
+                            phone: phone || null,
+                            street_address: streetAddress || null,
+                            city: city || null,
+                            state: state || null,
+                            country: country || null,
+                            postal_code: postalCode || null
                         }
                     }
                 });
