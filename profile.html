@@ -266,6 +266,10 @@
                             <span class="detail-label">Company</span>
                             <span class="detail-value" id="company">-</span>
                         </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Position</span>
+                            <span class="detail-value" id="position">-</span>
+                        </div>
                     </div>
                 </div>
 
@@ -358,6 +362,7 @@
                 document.getElementById('email').textContent = user.email;
                 document.getElementById('phone').textContent = user.user_metadata?.phone || '-';
                 document.getElementById('company').textContent = user.user_metadata?.company || '-';
+                document.getElementById('position').textContent = user.user_metadata?.position || '-';
 
                 // Set address information
                 document.getElementById('streetAddress').textContent = user.user_metadata?.street_address || '-';
