@@ -128,6 +128,17 @@
             flex: 1;
         }
 
+        .address-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .address-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
         .checkbox-group {
             display: flex;
             align-items: flex-start;
@@ -289,32 +300,34 @@
 
                 <div class="form-group">
                     <label for="phone">Phone Number</label>
-                    <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required>
+                    <input type="tel" id="phone" name="phone" placeholder="Phone number" required>
                 </div>
 
                 <div class="form-group">
                     <label for="streetAddress">Street Address</label>
-                    <input type="text" id="streetAddress" name="streetAddress" placeholder="Enter your street address" required>
+                    <input type="text" id="streetAddress" name="streetAddress" placeholder="Street address" required>
                 </div>
 
-                <div class="form-group">
-                    <label for="city">City</label>
-                    <input type="text" id="city" name="city" placeholder="Enter your city" required>
+                <div class="address-row">
+                    <div class="form-group">
+                        <label for="city">City</label>
+                        <input type="text" id="city" name="city" placeholder="City" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="state">State</label>
+                        <input type="text" id="state" name="state" placeholder="State" required>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="state">State</label>
-                    <input type="text" id="state" name="state" placeholder="Enter your state" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="country">Country</label>
-                    <input type="text" id="country" name="country" placeholder="Enter your country" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="postalCode">Postal Code</label>
-                    <input type="text" id="postalCode" name="postalCode" placeholder="Enter your postal code" required>
+                <div class="address-row">
+                    <div class="form-group">
+                        <label for="country">Country</label>
+                        <input type="text" id="country" name="country" placeholder="Country" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="postalCode">Postal Code</label>
+                        <input type="text" id="postalCode" name="postalCode" placeholder="Postal code" required>
+                    </div>
                 </div>
 
                 <div class="form-group">
