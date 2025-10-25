@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - ForgeNova</title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+    <link rel="alternate icon" href="assets/img/favicon-32.png">
+    <link rel="apple-touch-icon" href="assets/img/favicon-64.png">
+    
     <!-- Supabase SDK -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
@@ -250,38 +255,34 @@
                             <span class="detail-value" id="lastName">-</span>
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">Email address</span>
+                            <span class="detail-label">Email Address</span>
                             <span class="detail-value" id="email">-</span>
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">Phone</span>
-                            <span class="detail-value" id="phone">-</span>
-                        </div>
-                        <div class="detail-item full-width">
-                            <span class="detail-label">Bio</span>
-                            <span class="detail-value" id="bio">Team Manager</span>
+                            <span class="detail-label">Company</span>
+                            <span class="detail-value" id="company">-</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="detail-section">
-                    <h3>Address</h3>
+                    <h3>Workspace Information</h3>
                     <div class="detail-grid">
                         <div class="detail-item">
-                            <span class="detail-label">Country</span>
-                            <span class="detail-value" id="country">-</span>
+                            <span class="detail-label">Workspace Name</span>
+                            <span class="detail-value" id="workspaceName">-</span>
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">City/State</span>
-                            <span class="detail-value" id="cityState">-</span>
+                            <span class="detail-label">Industry</span>
+                            <span class="detail-value" id="industry">-</span>
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">Postal Code</span>
-                            <span class="detail-value" id="postalCode">-</span>
+                            <span class="detail-label">Company Size</span>
+                            <span class="detail-value" id="companySize">-</span>
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">TAX ID</span>
-                            <span class="detail-value" id="taxId">-</span>
+                            <span class="detail-label">Timezone</span>
+                            <span class="detail-value" id="timezone">-</span>
                         </div>
                     </div>
                 </div>
@@ -344,17 +345,16 @@
                 // Set personal information
                 const fullName = user.user_metadata?.full_name || userName;
                 const nameParts = fullName.split(' ');
-                document.getElementById('firstName').textContent = nameParts[0] || '-';
-                document.getElementById('lastName').textContent = nameParts.slice(1).join(' ') || '-';
+                document.getElementById('firstName').textContent = user.user_metadata?.first_name || nameParts[0] || '-';
+                document.getElementById('lastName').textContent = user.user_metadata?.last_name || nameParts.slice(1).join(' ') || '-';
                 document.getElementById('email').textContent = user.email;
-                document.getElementById('phone').textContent = user.user_metadata?.phone || '+09 345 346 46';
-                document.getElementById('bio').textContent = workspaceData.industry ? `${workspaceData.industry} Manager` : 'Team Manager';
+                document.getElementById('company').textContent = user.user_metadata?.company || '-';
 
-                // Set address information (using workspace data)
-                document.getElementById('country').textContent = workspaceData.country || 'United Kingdom';
-                document.getElementById('cityState').textContent = workspaceData.cityState || 'Leeds, East London';
-                document.getElementById('postalCode').textContent = workspaceData.postalCode || 'ERT 2354';
-                document.getElementById('taxId').textContent = workspaceData.taxId || 'AS45645756';
+                // Set workspace information
+                document.getElementById('workspaceName').textContent = workspaceData.name || '-';
+                document.getElementById('industry').textContent = workspaceData.industry || '-';
+                document.getElementById('companySize').textContent = workspaceData.companySize || '-';
+                document.getElementById('timezone').textContent = workspaceData.timezone || '-';
 
             } catch (error) {
                 console.error('Error loading profile:', error);
