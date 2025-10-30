@@ -3313,6 +3313,45 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('load', renderChartsNow);
 })();
 </script>
+    <!-- Supabase (v2) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // 1) Init (use your real values)
+  const SUPABASE_URL = "https://<YOUR-PROJECT-REF>.supabase.co";
+  const SUPABASE_ANON_KEY = "<YOUR-ANON-PUBLIC-KEY>";
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const userInfo = document.getElementById('userInfo');
+
+  // Render small user pill with Logout
+  function renderUser(session){
+    if (!userInfo) return;
+    if (session?.user) {
+      const email = session.user.email || 'User';
+      userInfo.innerHTML = `
+        <span style="font-size:13px;color:#6b7280">Signed in as</span>
+        <strong style="margin:0 8px">${email}</strong>
+        <button id="logoutBtn" class="btn small" type="button">Logout</button>
+      `;
+      const btn = document.getElementById('logoutBtn');
+      if (btn) btn.onclick = async () => {
+        await sb.auth.signOut();
+        // optional: clear any local cache the MVP uses
+        try { localStorage.clear(); } catch(e){}
+        location.href = "/login.html";
+      };
+    } else {
+      // Not logged in → send to login
+      location.href = "/login.html";
+    }
+  }
+
+  // 2) On load, check session
+  sb.auth.getSession().then(({ data }) => renderUser(data.session));
+
+  // 3) React to future auth changes
+  sb.auth.onAuthStateChange((_event, session) => renderUser(session));
+</script>
 </body>
 </html>
 
