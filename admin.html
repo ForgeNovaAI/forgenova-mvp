@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ForgeNovaAI — Admin</title>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; background:#f6f6f6; margin:0; }
+    .top { background:#fff; border-bottom:1px solid #eaeaea; padding:12px 16px; font-weight:600; }
+    .wrap { max-width:1000px; margin:24px auto; padding:0 16px; }
+    .card { background:#fff; border:1px solid #eee; border-radius:12px; padding:16px; }
+    .muted { color:#666; font-size:14px; }
+    .error { color:#b00020; }
+    a { color:#0b67ff; text-decoration:none; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="top">ForgeNovaAI — Admin</div>
+  <div class="wrap">
+    <div id="gate" class="card">
+      <div id="status" class="muted">Checking admin access…</div>
+    </div>
+
+    <div id="admin" class="card" style="margin-top:16px; display:none;">
+      <h2 style="margin:0 0 8px;">Overview</h2>
+      <div class="muted">Admin area is wired. Next we’ll add Users, Workspaces, Flags, Settings, and Audit.</div>
+      <div style="margin-top:12px;">
+        <a href="/dashboard.html">← Back to app</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // TODO: replace these two with your real values
+    const SUPABASE_URL  = 'https://icbfadlizwonymqclb.supabase.co';
+    const SUPABASE_ANON = 'eyJ...your_anon_key...';
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth: { persistSession: true }});
+
+    (async function main() {
+      const status = document.getElementById('status');
+      const adminBox = document.getElementById('admin');
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || !session.access_token) {
+        status.innerHTML = 'You are not logged in. <a href="/login.html">Login</a>';
+        return;
+      }
+
+      try {
+        const resp = await fetch('/api/auth-me', {
+          headers: { 'Authorization': 'Bearer ' + session.access_token }
+        });
+        const json = await resp.json();
+        if (!json.ok) {
+          status.innerHTML = '<span class="error">Auth check failed:</span> ' + (json.error || 'Unknown error');
+          return;
+        }
+        if (!json.isAdmin) {
+          status.innerHTML = 'Access denied. Your account is not an admin.';
+          return;
+        }
+        document.getElementById('gate').style.display = 'none';
+        adminBox.style.display = 'block';
+      } catch (e) {
+        status.innerHTML = '<span class="error">Network error:</span> ' + e.message;
+      }
+    })();
+  </script>
+</body>
+</html>
