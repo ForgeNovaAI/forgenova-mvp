@@ -1,9 +1,8 @@
 {
   "name": "forgenova-mvp",
   "private": true,
-  "version": "1.0.0",
   "scripts": {
-    "build": "echo \"no build\""
+    "build": "echo build skipped"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0"
