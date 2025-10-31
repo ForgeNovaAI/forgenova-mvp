@@ -1,72 +1,78 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ForgeNovaAI — Admin</title>
-  <style>
-    body { font-family: system-ui, Arial, sans-serif; background:#f6f6f6; margin:0; }
-    .top { background:#fff; border-bottom:1px solid #eaeaea; padding:12px 16px; font-weight:600; }
-    .wrap { max-width:1000px; margin:24px auto; padding:0 16px; }
-    .card { background:#fff; border:1px solid #eee; border-radius:12px; padding:16px; }
-    .muted { color:#666; font-size:14px; }
-    .error { color:#b00020; }
-    a { color:#0b67ff; text-decoration:none; }
-  </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body{font-family:system-ui,Arial,sans-serif;background:#f6f6f6;margin:0}
+    .top{background:#fff;border-bottom:1px solid #eee;padding:12px 16px;font-weight:600}
+    .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
+    .card{background:#fff;border:1px solid #eee;border-radius:12px;padding:16px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #f0f0f0;text-align:left;font-size:14px}
+    th{font-size:12px;color:#666;text-transform:uppercase}
+    .muted{color:#666;font-size:14px}
+    .pill{background:#f2f4f7;border:1px solid #e5e7eb;border-radius:999px;padding:2px 8px;font-size:12px}
+  </style>
 </head>
 <body>
   <div class="top">ForgeNovaAI — Admin</div>
   <div class="wrap">
-    <div id="gate" class="card">
-      <div id="status" class="muted">Checking admin access…</div>
-    </div>
-
-    <div id="admin" class="card" style="margin-top:16px; display:none;">
-      <h2 style="margin:0 0 8px;">Overview</h2>
-      <div class="muted">Admin area is wired. Next we’ll add Users, Workspaces, Flags, Settings, and Audit.</div>
-      <div style="margin-top:12px;">
-        <a href="/dashboard.html">← Back to app</a>
+    <div id="gate" class="card"><div id="status" class="muted">Checking admin access…</div></div>
+    <div id="users" class="card" style="display:none;">
+      <h2 style="margin:0 0 8px;">Users</h2>
+      <div id="meta" class="muted" style="margin:4px 0 12px;"></div>
+      <div style="overflow:auto;">
+        <table>
+          <thead><tr><th>Email</th><th>User ID</th><th>Sign-up</th><th>Last Sign-in</th><th>Provider</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
       </div>
     </div>
   </div>
 
   <script>
-    // TODO: replace these two with your real values
+    // Use the same values as your login.html
     const SUPABASE_URL  = 'https://icbfadlizwonymqclb.supabase.co';
-    const SUPABASE_ANON = 'eyJ...your_anon_key...';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljYmZhZGxpend3b255bXFkY2xiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgwMzU4OTUsImV4cCI6MjA3MzYxMTg5NX0.sQNGjFdC-WM0nSdGucgx3DelUJ5KJXh6S8J54xWUEu0';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth: { persistSession: true } });
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth: { persistSession: true }});
+    const statusEl = document.getElementById('status');
+    const gate = document.getElementById('gate');
+    const usersCard = document.getElementById('users');
+    const tbody = document.getElementById('tbody');
+    const meta = document.getElementById('meta');
 
-    (async function main() {
-      const status = document.getElementById('status');
-      const adminBox = document.getElementById('admin');
+    async function main() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session?.access_token) { statusEl.innerHTML='You are not logged in. <a href="/login.html">Login</a>'; return; }
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session || !session.access_token) {
-        status.innerHTML = 'You are not logged in. <a href="/login.html">Login</a>';
-        return;
-      }
+      const me = await fetch('/api/auth-me', { headers: { Authorization: 'Bearer ' + session.access_token }});
+      const mj = await me.json();
+      if (!mj.ok) { statusEl.textContent='Auth check failed: ' + (mj.error||''); return; }
+      if (!mj.isAdmin) { statusEl.textContent='Access denied (not an admin).'; return; }
 
-      try {
-        const resp = await fetch('/api/auth-me', {
-          headers: { 'Authorization': 'Bearer ' + session.access_token }
-        });
-        const json = await resp.json();
-        if (!json.ok) {
-          status.innerHTML = '<span class="error">Auth check failed:</span> ' + (json.error || 'Unknown error');
-          return;
-        }
-        if (!json.isAdmin) {
-          status.innerHTML = 'Access denied. Your account is not an admin.';
-          return;
-        }
-        document.getElementById('gate').style.display = 'none';
-        adminBox.style.display = 'block';
-      } catch (e) {
-        status.innerHTML = '<span class="error">Network error:</span> ' + e.message;
-      }
-    })();
+      const resp = await fetch('/api/admin/users-list?per=100', { headers: { Authorization: 'Bearer ' + session.access_token }});
+      const json = await resp.json();
+      if (!json.ok) { statusEl.textContent='Users API error: ' + (json.error||''); return; }
+
+      tbody.innerHTML = json.users.map(u => `
+        <tr>
+          <td>${u.email || ''}</td>
+          <td><span class="pill">${u.id}</span></td>
+          <td>${u.created_at ? new Date(u.created_at).toLocaleString() : ''}</td>
+          <td>${u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString() : ''}</td>
+          <td>${u.provider || ''}</td>
+        </tr>
+      `).join('');
+
+      meta.textContent = \`Showing ${json.count} users (page ${json.page})\`;
+      gate.style.display = 'none';
+      usersCard.style.display = 'block';
+    }
+    main().catch(e => statusEl.textContent = 'Error: ' + e.message);
   </script>
 </body>
 </html>
