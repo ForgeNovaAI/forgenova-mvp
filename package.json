@@ -2,7 +2,9 @@
   "name": "forgenova-mvp",
   "private": true,
   "scripts": {
-    "build": "echo build skipped"
+    "build": "echo build skipped",
+    "dev": "node server.js",
+    "start": "node server.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0"

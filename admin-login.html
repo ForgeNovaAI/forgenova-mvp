@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - ForgeNova</title>
+    
+    <style>
+        :root {
+            --bg: #f7f9fc;
+            --card: #fff;
+            --text: #0f172a;
+            --muted: #475569;
+            --border: #e5e7eb;
+            --brand: #ff6a00;
+            --error: #dc2626;
+            --success: #16a34a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 32px;
+        }
+
+        .logo img {
+            display: block;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-align: center;
+            color: var(--text);
+        }
+
+        .subtitle {
+            color: var(--muted);
+            text-align: center;
+            margin-bottom: 32px;
+            font-size: 14px;
+        }
+
+        .admin-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 24px;
+            display: block;
+            text-align: center;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.2s;
+            background: #f9fafb;
+            color: var(--text);
+        }
+
+        input::placeholder {
+            color: #9ca3af;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--brand);
+            background: white;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #9ca3af;
+            font-size: 14px;
+            padding: 4px 8px;
+            transition: color 0.2s;
+        }
+
+        .password-toggle:hover {
+            color: var(--brand);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--brand);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #e55a00;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            color: var(--error);
+            border: 1px solid #fecaca;
+        }
+
+        .alert-success {
+            background: #f0fdf4;
+            color: var(--success);
+            border: 1px solid #bbf7d0;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .link-text {
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 20px;
+        }
+
+        .link-text a {
+            color: var(--brand);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .link-text a:hover {
+            text-decoration: underline;
+        }
+
+        .test-credentials {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #0c4a6e;
+        }
+
+        .test-credentials strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #075985;
+        }
+
+        .test-credentials code {
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="logo">
+            <img src="assets/img/ForgeNova Final Logo.png" alt="ForgeNovaAI" style="height:80px;width:auto"/>
+        </div>
+
+        <span class="admin-badge">🔐 Admin Access</span>
+
+        <h1>Admin Login</h1>
+        <p class="subtitle">Sign in to access the admin dashboard</p>
+
+        <div id="alertBox"></div>
+
+        <form id="adminLoginForm">
+            <div class="form-group">
+                <label for="email">Email address</label>
+                <input type="email" id="email" name="email" required autocomplete="email" placeholder="admin@forgenova.ai">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="••••••••">
+                    <button type="button" class="password-toggle" onclick="togglePassword('password')">Show</button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="loginBtn">
+                Sign in to Admin
+            </button>
+        </form>
+
+        <div class="test-credentials">
+            <strong>Test Admin Credentials:</strong>
+            <div>Email: <code>admin@forgenova.ai</code></div>
+            <div>Password: <code>admin123</code></div>
+        </div>
+
+        <p class="link-text">
+            <a href="/">← Back to main site</a>
+        </p>
+    </div>
+
+    <script>
+        // Check if already logged in as admin
+        (function() {
+            const adminToken = localStorage.getItem('adminToken');
+            if (adminToken) {
+                // Verify token is still valid
+                fetch('/api/admin-verify', {
+                    headers: { 'Authorization': 'Bearer ' + adminToken }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.ok && data.isAdmin) {
+                        window.location.href = '/admin.html';
+                    }
+                })
+                .catch(() => {
+                    // Token invalid, clear it
+                    localStorage.removeItem('adminToken');
+                });
+            }
+        })();
+
+        // Toggle password visibility
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const button = input.nextElementSibling;
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.textContent = 'Hide';
+            } else {
+                input.type = 'password';
+                button.textContent = 'Show';
+            }
+        }
+
+        // Show alert
+        function showAlert(message, type = 'error') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+        }
+
+        // Clear alert
+        function clearAlert() {
+            document.getElementById('alertBox').innerHTML = '';
+        }
+
+        // Handle admin login form
+        document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearAlert();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<div class="loading-text"><span class="spinner"></span> Signing in...</div>';
+            
+            try {
+                const response = await fetch('/api/admin-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.ok && data.token) {
+                    // Store admin token
+                    localStorage.setItem('adminToken', data.token);
+                    localStorage.setItem('adminUser', JSON.stringify(data.user));
+                    
+                    showAlert('Login successful! Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/admin.html';
+                    }, 1000);
+                } else {
+                    showAlert(data.error || 'Invalid credentials. Please try again.');
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = 'Sign in to Admin';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showAlert('Failed to connect to server. Please try again.');
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = 'Sign in to Admin';
+            }
+        });
+    </script>
+</body>
+</html>
+
