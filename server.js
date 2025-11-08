@@ -496,7 +496,7 @@ function serveStaticFile(filePath, res) {
       }
     } else {
       res.writeHead(200, { 'Content-Type': contentType });
-      res.end(content, 'utf-8');
+      res.end(content);
     }
   });
 }
@@ -515,7 +515,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   const parsedUrl = url.parse(req.url);
-  let pathname = parsedUrl.pathname;
+  let pathname = decodeURIComponent(parsedUrl.pathname);
 
   // Handle API endpoints
   if (pathname.startsWith('/api/')) {

@@ -329,6 +329,611 @@
       margin-bottom: 20px;
     }
 
+    /* Logs Section */
+    .logs-description {
+      font-size: 16px;
+      color: #4b5563;
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .logs-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 10px 20px;
+      border: 1px solid #e5e7eb;
+      background: white;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      color: #4b5563;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+      background: #f9fafb;
+      border-color: #d1d5db;
+    }
+
+    .filter-btn.active {
+      background: #f3f4f6;
+      color: #1f2937;
+      font-weight: 600;
+      border-color: #9ca3af;
+    }
+
+    .export-btn {
+      padding: 10px 24px;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      color: #1f2937;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .export-btn:hover {
+      background: #f9fafb;
+      border-color: #d1d5db;
+    }
+
+    .log-level {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+    }
+
+    .log-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .log-icon.error {
+      background: #dc2626;
+    }
+
+    .log-icon.warning {
+      background: #f59e0b;
+    }
+
+    .log-icon.info {
+      background: #3b82f6;
+    }
+
+    .log-icon.debug {
+      background: #6b7280;
+    }
+
+    .log-level.error {
+      color: #dc2626;
+    }
+
+    .log-level.warning {
+      color: #f59e0b;
+    }
+
+    .log-level.info {
+      color: #3b82f6;
+    }
+
+    .log-level.debug {
+      color: #6b7280;
+    }
+
+    /* Workspaces Section */
+    .workspaces-description {
+      font-size: 16px;
+      color: #4b5563;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    .workspaces-container {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 32px;
+      margin-top: 32px;
+    }
+
+    .workspaces-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .workspace-card {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 24px;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .workspace-card:hover {
+      border-color: #d1d5db;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .workspace-card.selected {
+      border-color: #ff5e1e;
+      background: #fff7f5;
+    }
+
+    .workspace-dots {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 40px;
+    }
+
+    .workspace-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #d1d5db;
+    }
+
+    .workspace-card.selected .workspace-dot {
+      background: #ff5e1e;
+    }
+
+    .workspace-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 12px;
+    }
+
+    .workspace-meta {
+      font-size: 14px;
+      color: #6b7280;
+      margin-top: auto;
+    }
+
+    .workspace-detail {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 32px;
+    }
+
+    .workspace-detail-header {
+      margin-bottom: 24px;
+    }
+
+    .workspace-detail-title {
+      font-size: 32px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 16px;
+    }
+
+    .workspace-tabs {
+      display: flex;
+      gap: 32px;
+      border-bottom: 2px solid #e5e7eb;
+      margin-bottom: 24px;
+    }
+
+    .workspace-tab {
+      padding: 12px 0;
+      font-size: 16px;
+      font-weight: 500;
+      color: #6b7280;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+    }
+
+    .workspace-tab:hover {
+      color: #1f2937;
+    }
+
+    .workspace-tab.active {
+      color: #ff5e1e;
+      border-bottom-color: #ff5e1e;
+      font-weight: 600;
+    }
+
+    .workspace-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .workspace-stat {
+      font-size: 16px;
+      color: #1f2937;
+    }
+
+    .workspace-section-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 16px;
+    }
+
+    .workspace-members {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .workspace-member {
+      font-size: 16px;
+      color: #1f2937;
+    }
+
+    .workspace-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .workspace-info-item {
+      font-size: 16px;
+      color: #1f2937;
+    }
+
+    .workspace-info-item .label {
+      color: #6b7280;
+    }
+
+    .workspace-actions {
+      display: flex;
+      gap: 16px;
+      padding-top: 24px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .workspace-action-btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .workspace-action-btn.view {
+      background: white;
+      color: #3b82f6;
+      border: 1px solid #3b82f6;
+    }
+
+    .workspace-action-btn.view:hover {
+      background: #eff6ff;
+    }
+
+    .workspace-action-btn.suspend {
+      background: white;
+      color: #6b7280;
+      border: 1px solid #d1d5db;
+    }
+
+    .workspace-action-btn.suspend:hover {
+      background: #f9fafb;
+    }
+
+    .workspace-action-btn.delete {
+      background: white;
+      color: #dc2626;
+      border: 1px solid #dc2626;
+    }
+
+    .workspace-action-btn.delete:hover {
+      background: #fef2f2;
+    }
+
+    .workspace-new-btn {
+      position: absolute;
+      top: 32px;
+      right: 40px;
+      background: #ff5e1e;
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .workspace-new-btn:hover {
+      background: #e55419;
+    }
+
+    .workspace-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6b7280;
+    }
+
+    /* Templates Section */
+    .templates-description {
+      font-size: 16px;
+      color: #4b5563;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    .templates-container {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 32px;
+      margin-top: 32px;
+    }
+
+    .templates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .template-card {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 24px;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .template-card:hover {
+      border-color: #d1d5db;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .template-card.selected {
+      border-color: #ff5e1e;
+      background: #fff7f5;
+    }
+
+    .template-dots {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 40px;
+    }
+
+    .template-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #d1d5db;
+    }
+
+    .template-card.selected .template-dot {
+      background: #ff5e1e;
+    }
+
+    .template-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 12px;
+    }
+
+    .template-meta {
+      font-size: 14px;
+      color: #6b7280;
+      margin-top: auto;
+    }
+
+    .template-detail {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 32px;
+    }
+
+    .template-detail-header {
+      margin-bottom: 24px;
+    }
+
+    .template-detail-title {
+      font-size: 32px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 16px;
+    }
+
+    .template-tabs {
+      display: flex;
+      gap: 32px;
+      border-bottom: 2px solid #e5e7eb;
+      margin-bottom: 24px;
+    }
+
+    .template-tab {
+      padding: 12px 0;
+      font-size: 16px;
+      font-weight: 500;
+      color: #6b7280;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+    }
+
+    .template-tab:hover {
+      color: #1f2937;
+    }
+
+    .template-tab.active {
+      color: #ff5e1e;
+      border-bottom-color: #ff5e1e;
+      font-weight: 600;
+    }
+
+    .template-info-row {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+      font-size: 16px;
+    }
+
+    .template-info-label {
+      color: #1f2937;
+      font-weight: 500;
+    }
+
+    .template-info-value {
+      color: #1f2937;
+    }
+
+    .template-section {
+      margin-top: 32px;
+      margin-bottom: 24px;
+    }
+
+    .template-section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 12px;
+    }
+
+    .template-used-by {
+      color: #1f2937;
+      font-size: 16px;
+      margin-bottom: 24px;
+    }
+
+    .template-used-for {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .template-tag {
+      padding: 6px 16px;
+      background: #f3f4f6;
+      border-radius: 6px;
+      font-size: 15px;
+      color: #1f2937;
+    }
+
+    .template-actions {
+      display: flex;
+      gap: 16px;
+      padding-top: 24px;
+      border-top: 1px solid #e5e7eb;
+      margin-top: 32px;
+    }
+
+    .template-action-btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .template-action-btn.edit {
+      background: white;
+      color: #3b82f6;
+      border: 1px solid #3b82f6;
+    }
+
+    .template-action-btn.edit:hover {
+      background: #eff6ff;
+    }
+
+    .template-action-btn.duplicate {
+      background: white;
+      color: #6b7280;
+      border: 1px solid #d1d5db;
+    }
+
+    .template-action-btn.duplicate:hover {
+      background: #f9fafb;
+    }
+
+    .template-action-btn.archive {
+      background: white;
+      color: #6b7280;
+      border: 1px solid #d1d5db;
+    }
+
+    .template-action-btn.archive:hover {
+      background: #f9fafb;
+    }
+
+    .template-action-btn.delete {
+      background: white;
+      color: #dc2626;
+      border: 1px solid #dc2626;
+    }
+
+    .template-action-btn.delete:hover {
+      background: #fef2f2;
+    }
+
+    .template-new-btn {
+      position: absolute;
+      top: 32px;
+      right: 40px;
+      background: #ff5e1e;
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .template-new-btn:hover {
+      background: #e55419;
+    }
+
+    .template-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6b7280;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .header {
@@ -358,6 +963,39 @@
         flex-direction: column;
         gap: 16px;
         align-items: flex-start;
+      }
+
+      .logs-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .filter-buttons {
+        width: 100%;
+      }
+
+      .export-btn {
+        width: 100%;
+      }
+
+      .workspaces-container {
+        grid-template-columns: 1fr;
+      }
+
+      .workspace-new-btn {
+        position: static;
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .templates-container {
+        grid-template-columns: 1fr;
+      }
+
+      .template-new-btn {
+        position: static;
+        width: 100%;
+        margin-bottom: 20px;
       }
     }
   </style>
@@ -465,30 +1103,50 @@
 
     <!-- Workspaces Section -->
     <div id="section-workspaces" class="content-section" style="display:none;">
-      <div class="section">
-        <div class="section-header">
-          <h2 class="section-title">Workspaces</h2>
-          <div class="section-actions">
-            <button class="btn-primary">Add Workspace</button>
+      <div class="section" style="position: relative;">
+        <h2 class="section-title" style="margin-bottom: 16px;">Workspaces</h2>
+        <p class="workspaces-description">
+          Workspaces allow users to organize their factory apps into distinct groups.<br>
+          Users can create new workspaces or manage existing ones as needed.
+        </p>
+        
+        <button class="workspace-new-btn" onclick="createNewWorkspace()">New Workspace</button>
+        
+        <div class="workspaces-container">
+          <!-- Workspace Cards -->
+          <div class="workspaces-grid" id="workspacesGrid">
+            <!-- Cards will be rendered here -->
           </div>
-        </div>
-        <div style="padding:60px; text-align:center; color:#6b7280;">
-          <p>Workspaces management coming soon...</p>
+          
+          <!-- Workspace Detail -->
+          <div id="workspaceDetail">
+            <!-- Detail will be rendered here -->
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Templates Section -->
     <div id="section-templates" class="content-section" style="display:none;">
-      <div class="section">
-        <div class="section-header">
-          <h2 class="section-title">Templates</h2>
-          <div class="section-actions">
-            <button class="btn-primary">Add Template</button>
+      <div class="section" style="position: relative;">
+        <h2 class="section-title" style="margin-bottom: 16px;">Templates</h2>
+        <p class="templates-description">
+          App templates provide a starting point for users building factory apps.<br>
+          Administrators can create and manage templates from this page.
+        </p>
+        
+        <button class="template-new-btn" onclick="createNewTemplate()">New Template</button>
+        
+        <div class="templates-container">
+          <!-- Template Cards -->
+          <div class="templates-grid" id="templatesGrid">
+            <!-- Cards will be rendered here -->
           </div>
-        </div>
-        <div style="padding:60px; text-align:center; color:#6b7280;">
-          <p>Templates management coming soon...</p>
+          
+          <!-- Template Detail -->
+          <div id="templateDetail">
+            <!-- Detail will be rendered here -->
+          </div>
         </div>
       </div>
     </div>
@@ -496,19 +1154,25 @@
     <!-- Logs Section -->
     <div id="section-logs" class="content-section" style="display:none;">
       <div class="section">
-        <div class="section-header">
-          <h2 class="section-title">System Logs</h2>
-          <div class="section-actions">
-            <select class="filter-dropdown">
-              <option>All Logs</option>
-              <option>Errors</option>
-              <option>Warnings</option>
-              <option>Info</option>
-            </select>
+        <h2 class="section-title" style="margin-bottom: 16px;">Logs</h2>
+        <p class="logs-description">
+          Activity logs provide detailed records of recent actions and events in the system.<br>
+          Logs can be filtered by level and exported for external analysis.
+        </p>
+        
+        <div class="logs-controls">
+          <div class="filter-buttons">
+            <button class="filter-btn active" data-level="all" onclick="filterLogs('all')">All Levels</button>
+            <button class="filter-btn" data-level="error" onclick="filterLogs('error')">Error</button>
+            <button class="filter-btn" data-level="warning" onclick="filterLogs('warning')">Warning</button>
+            <button class="filter-btn" data-level="info" onclick="filterLogs('info')">Info</button>
+            <button class="filter-btn" data-level="debug" onclick="filterLogs('debug')">Debug</button>
           </div>
+          <button class="export-btn" onclick="exportLogs()">Export Logs</button>
         </div>
-        <div style="padding:60px; text-align:center; color:#6b7280;">
-          <p>System logs coming soon...</p>
+
+        <div id="logsTableContainer">
+          <!-- Logs will be rendered here -->
         </div>
       </div>
     </div>
@@ -529,6 +1193,14 @@
   <script>
     let allUsers = [];
     let currentFilter = '';
+    let allLogs = [];
+    let currentLogFilter = 'all';
+    let allWorkspaces = [];
+    let selectedWorkspaceId = null;
+    let currentWorkspaceTab = 'overview';
+    let allTemplates = [];
+    let selectedTemplateId = null;
+    let currentTemplateTab = 'preview';
 
     // Navigation function
     function showSection(sectionName) {
@@ -557,6 +1229,24 @@
           fetchUsers(false);
         } else {
           renderUsers(allUsers, 'usersTableContainer');
+        }
+      } else if (sectionName === 'logs') {
+        if (allLogs.length === 0) {
+          loadLogs();
+        } else {
+          renderLogs(allLogs);
+        }
+      } else if (sectionName === 'workspaces') {
+        if (allWorkspaces.length === 0) {
+          loadWorkspaces();
+        } else {
+          renderWorkspaces();
+        }
+      } else if (sectionName === 'templates') {
+        if (allTemplates.length === 0) {
+          loadTemplates();
+        } else {
+          renderTemplates();
         }
       }
     }
@@ -872,6 +1562,680 @@
       } catch (e) {
         alert('Network error: ' + e.message);
       }
+    }
+
+    // Logs functionality
+    function loadLogs() {
+      // Mock log data
+      allLogs = [
+        {
+          id: 1,
+          level: 'error',
+          message: 'Failed data import',
+          user: 'Jane Doe admin.poc',
+          time: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+          timestamp: Date.now() - 2 * 60 * 60 * 1000
+        },
+        {
+          id: 2,
+          level: 'info',
+          message: 'Admin role assigned',
+          user: 'admin@forgenova.ai',
+          time: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
+          timestamp: Date.now() - 4 * 60 * 60 * 1000
+        },
+        {
+          id: 3,
+          level: 'error',
+          message: 'Template creation failed',
+          user: 'John Smith John.sm',
+          time: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
+          timestamp: Date.now() - 6 * 60 * 60 * 1000
+        },
+        {
+          id: 4,
+          level: 'error',
+          message: 'Login attempt exceeded',
+          user: 'Jane Doe Jane Doe',
+          time: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+          timestamp: Date.now() - 24 * 60 * 60 * 1000
+        },
+        {
+          id: 5,
+          level: 'warning',
+          message: 'High memory usage detected',
+          user: 'System',
+          time: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
+          timestamp: Date.now() - 5 * 60 * 60 * 1000
+        },
+        {
+          id: 6,
+          level: 'info',
+          message: 'User password reset successfully',
+          user: 'admin@forgenova.ai',
+          time: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
+          timestamp: Date.now() - 3 * 60 * 60 * 1000
+        },
+        {
+          id: 7,
+          level: 'debug',
+          message: 'Database connection pool initialized',
+          user: 'System',
+          time: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
+          timestamp: Date.now() - 12 * 60 * 60 * 1000
+        },
+        {
+          id: 8,
+          level: 'warning',
+          message: 'API rate limit approaching',
+          user: 'System',
+          time: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
+          timestamp: Date.now() - 1 * 60 * 60 * 1000
+        }
+      ];
+      
+      // Sort by timestamp (newest first)
+      allLogs.sort((a, b) => b.timestamp - a.timestamp);
+      
+      renderLogs(allLogs);
+    }
+
+    function renderLogs(logs) {
+      const container = document.getElementById('logsTableContainer');
+      
+      if (!container) return;
+      
+      if (logs.length === 0) {
+        container.innerHTML = '<div class="loading"><p>No logs found</p></div>';
+        return;
+      }
+
+      let html = `
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>LEVEL</th>
+                <th>MESSAGE</th>
+                <th>USER</th>
+                <th>TIME</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      logs.forEach(log => {
+        const timeAgo = formatTimeAgo(log.time);
+        const icon = log.level === 'error' ? '!' : 
+                     log.level === 'warning' ? '⚠' : 
+                     log.level === 'info' ? 'i' : 
+                     'D';
+
+        html += `
+          <tr>
+            <td>
+              <div class="log-level ${log.level}">
+                <div class="log-icon ${log.level}">${icon}</div>
+                ${capitalizeFirst(log.level)}
+              </div>
+            </td>
+            <td>${log.message}</td>
+            <td>${log.user}</td>
+            <td>${timeAgo}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      container.innerHTML = html;
+    }
+
+    function filterLogs(level) {
+      currentLogFilter = level;
+      
+      // Update active button
+      const buttons = document.querySelectorAll('.filter-btn');
+      buttons.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-level') === level) {
+          btn.classList.add('active');
+        }
+      });
+      
+      // Filter logs
+      if (level === 'all') {
+        renderLogs(allLogs);
+      } else {
+        const filtered = allLogs.filter(log => log.level === level);
+        renderLogs(filtered);
+      }
+    }
+
+    function exportLogs() {
+      const logsToExport = currentLogFilter === 'all' 
+        ? allLogs 
+        : allLogs.filter(log => log.level === currentLogFilter);
+      
+      if (logsToExport.length === 0) {
+        alert('No logs to export');
+        return;
+      }
+      
+      // Create CSV content
+      let csv = 'Level,Message,User,Time\n';
+      logsToExport.forEach(log => {
+        const timeStr = log.time.toISOString();
+        csv += `"${log.level}","${log.message}","${log.user}","${timeStr}"\n`;
+      });
+      
+      // Create download
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `forgenova-logs-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }
+
+    function formatTimeAgo(date) {
+      const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+      
+      if (seconds < 60) return 'Just now';
+      
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return minutes + ' minute' + (minutes === 1 ? '' : 's') + ' ago';
+      
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return hours + ' hour' + (hours === 1 ? '' : 's') + ' ago';
+      
+      const days = Math.floor(hours / 24);
+      if (days < 7) return days + ' day' + (days === 1 ? '' : 's') + ' ago';
+      
+      const weeks = Math.floor(days / 7);
+      if (weeks < 4) return weeks + ' week' + (weeks === 1 ? '' : 's') + ' ago';
+      
+      const months = Math.floor(days / 30);
+      return months + ' month' + (months === 1 ? '' : 's') + ' ago';
+    }
+
+    // Workspaces functionality
+    function loadWorkspaces() {
+      // Mock workspace data
+      allWorkspaces = [
+        {
+          id: 1,
+          name: 'Workspace One',
+          lastUsed: null,
+          totalApps: 5,
+          activeTemplates: 3,
+          members: [
+            { name: 'Ford Engineering', role: 'Admin' },
+            { name: 'Jane Doe', role: 'Member' }
+          ],
+          dataImports: 1,
+          errors: 12,
+          errorPeriod: 'last 60 days',
+          status: 'active'
+        },
+        {
+          id: 2,
+          name: 'Workspace Two',
+          lastUsed: null,
+          totalApps: 3,
+          activeTemplates: 2,
+          members: [
+            { name: 'John Smith', role: 'Admin' }
+          ],
+          dataImports: 0,
+          errors: 2,
+          errorPeriod: 'last 60 days',
+          status: 'active'
+        },
+        {
+          id: 3,
+          name: 'Workspace Three',
+          lastUsed: null,
+          totalApps: 8,
+          activeTemplates: 5,
+          members: [
+            { name: 'Alice Johnson', role: 'Admin' },
+            { name: 'Bob Wilson', role: 'Member' },
+            { name: 'Carol Davis', role: 'Member' }
+          ],
+          dataImports: 5,
+          errors: 0,
+          errorPeriod: 'last 60 days',
+          status: 'active'
+        },
+        {
+          id: 4,
+          name: 'Workspace Four',
+          lastUsed: null,
+          totalApps: 2,
+          activeTemplates: 1,
+          members: [
+            { name: 'David Brown', role: 'Admin' }
+          ],
+          dataImports: 0,
+          errors: 8,
+          errorPeriod: 'last 60 days',
+          status: 'active'
+        }
+      ];
+
+      // Select first workspace by default
+      selectedWorkspaceId = allWorkspaces[0].id;
+      renderWorkspaces();
+    }
+
+    function renderWorkspaces() {
+      const gridContainer = document.getElementById('workspacesGrid');
+      
+      if (!gridContainer) return;
+      
+      if (allWorkspaces.length === 0) {
+        gridContainer.innerHTML = '<div class="workspace-empty"><p>No workspaces found. Create a new workspace to get started.</p></div>';
+        return;
+      }
+
+      // Render workspace cards
+      let cardsHtml = '';
+      allWorkspaces.forEach(workspace => {
+        const isSelected = workspace.id === selectedWorkspaceId;
+        const lastUsedText = workspace.lastUsed 
+          ? formatDate(workspace.lastUsed) 
+          : 'never used';
+
+        cardsHtml += `
+          <div class="workspace-card ${isSelected ? 'selected' : ''}" onclick="selectWorkspace(${workspace.id})">
+            <div class="workspace-dots">
+              <div class="workspace-dot"></div>
+              <div class="workspace-dot"></div>
+              <div class="workspace-dot"></div>
+            </div>
+            <div class="workspace-name">${workspace.name}</div>
+            <div class="workspace-meta">Last used: ${lastUsedText}</div>
+          </div>
+        `;
+      });
+
+      gridContainer.innerHTML = cardsHtml;
+
+      // Render selected workspace detail
+      renderWorkspaceDetail();
+    }
+
+    function renderWorkspaceDetail() {
+      const detailContainer = document.getElementById('workspaceDetail');
+      
+      if (!detailContainer) return;
+      
+      const workspace = allWorkspaces.find(w => w.id === selectedWorkspaceId);
+      
+      if (!workspace) {
+        detailContainer.innerHTML = '<div class="workspace-empty"><p>Select a workspace to view details</p></div>';
+        return;
+      }
+
+      let html = `
+        <div class="workspace-detail">
+          <div class="workspace-detail-header">
+            <h3 class="workspace-detail-title">${workspace.name}</h3>
+            <div class="workspace-tabs">
+              <div class="workspace-tab ${currentWorkspaceTab === 'overview' ? 'active' : ''}" onclick="switchWorkspaceTab('overview')">Overview</div>
+              <div class="workspace-tab ${currentWorkspaceTab === 'members' ? 'active' : ''}" onclick="switchWorkspaceTab('members')">Members</div>
+              <div class="workspace-tab ${currentWorkspaceTab === 'usage' ? 'active' : ''}" onclick="switchWorkspaceTab('usage')">Usage</div>
+              <div class="workspace-tab ${currentWorkspaceTab === 'settings' ? 'active' : ''}" onclick="switchWorkspaceTab('settings')">Settings</div>
+            </div>
+          </div>
+
+          <div class="workspace-stats">
+            <div class="workspace-stat">Total Apps: ${workspace.totalApps}</div>
+            <div class="workspace-stat">Active Templates: ${workspace.activeTemplates}</div>
+          </div>
+
+          <h4 class="workspace-section-title">Members</h4>
+          <div class="workspace-members">
+      `;
+
+      // Render members
+      workspace.members.forEach(member => {
+        html += `<div class="workspace-member">${member.name}</div>`;
+      });
+
+      html += `
+          </div>
+
+          <div class="workspace-info-grid">
+            <div class="workspace-info-item">Data Imports: ${workspace.dataImports}</div>
+            <div class="workspace-info-item">Errors: ${workspace.errors} <span class="label">${workspace.errorPeriod}</span></div>
+          </div>
+
+          <div class="workspace-actions">
+            <button class="workspace-action-btn view" onclick="viewWorkspaceLogs(${workspace.id})">View Logs</button>
+            <button class="workspace-action-btn suspend" onclick="suspendWorkspace(${workspace.id})">Suspend</button>
+            <button class="workspace-action-btn delete" onclick="deleteWorkspace(${workspace.id})">Delete</button>
+          </div>
+        </div>
+      `;
+
+      detailContainer.innerHTML = html;
+    }
+
+    function selectWorkspace(workspaceId) {
+      selectedWorkspaceId = workspaceId;
+      currentWorkspaceTab = 'overview';
+      renderWorkspaces();
+    }
+
+    function switchWorkspaceTab(tab) {
+      currentWorkspaceTab = tab;
+      renderWorkspaceDetail();
+    }
+
+    function createNewWorkspace() {
+      const name = prompt('Enter workspace name:');
+      if (!name) return;
+
+      const newWorkspace = {
+        id: allWorkspaces.length + 1,
+        name: name,
+        lastUsed: null,
+        totalApps: 0,
+        activeTemplates: 0,
+        members: [],
+        dataImports: 0,
+        errors: 0,
+        errorPeriod: 'last 60 days',
+        status: 'active'
+      };
+
+      allWorkspaces.push(newWorkspace);
+      selectedWorkspaceId = newWorkspace.id;
+      renderWorkspaces();
+      alert(`Workspace "${name}" created successfully!`);
+    }
+
+    function viewWorkspaceLogs(workspaceId) {
+      alert(`Viewing logs for workspace ${workspaceId}...\n\nThis would show filtered logs for this workspace.`);
+    }
+
+    function suspendWorkspace(workspaceId) {
+      const workspace = allWorkspaces.find(w => w.id === workspaceId);
+      if (!workspace) return;
+
+      if (!confirm(`Are you sure you want to suspend "${workspace.name}"?`)) return;
+
+      workspace.status = 'suspended';
+      alert(`Workspace "${workspace.name}" has been suspended.`);
+    }
+
+    function deleteWorkspace(workspaceId) {
+      const workspace = allWorkspaces.find(w => w.id === workspaceId);
+      if (!workspace) return;
+
+      if (!confirm(`Are you sure you want to delete "${workspace.name}"? This action cannot be undone.`)) return;
+
+      allWorkspaces = allWorkspaces.filter(w => w.id !== workspaceId);
+      
+      if (selectedWorkspaceId === workspaceId) {
+        selectedWorkspaceId = allWorkspaces.length > 0 ? allWorkspaces[0].id : null;
+      }
+
+      renderWorkspaces();
+      alert(`Workspace "${workspace.name}" has been deleted.`);
+    }
+
+    // Templates functionality
+    function loadTemplates() {
+      // Mock template data
+      allTemplates = [
+        {
+          id: 1,
+          name: 'Maintenance Log',
+          lastUsed: null,
+          created: 'Jane Doe',
+          updated: 'Jane Doe',
+          usedBy: ['Workspace One'],
+          usedFor: ['Editactate', 'Archive'],
+          description: 'Track and manage equipment maintenance activities',
+          status: 'active'
+        },
+        {
+          id: 2,
+          name: 'Production Tracker',
+          lastUsed: null,
+          created: 'John Smith',
+          updated: 'John Smith',
+          usedBy: ['Workspace Two', 'Workspace Three'],
+          usedFor: ['Production', 'Analytics'],
+          description: 'Monitor production metrics and output',
+          status: 'active'
+        },
+        {
+          id: 3,
+          name: 'Equipment Checklist',
+          lastUsed: null,
+          created: 'Alice Johnson',
+          updated: 'Alice Johnson',
+          usedBy: ['Workspace One', 'Workspace Four'],
+          usedFor: ['Quality Control', 'Compliance'],
+          description: 'Standardized equipment inspection checklist',
+          status: 'active'
+        },
+        {
+          id: 4,
+          name: 'Safety Audit',
+          lastUsed: null,
+          created: 'Bob Wilson',
+          updated: 'Jane Doe',
+          usedBy: ['Workspace Three'],
+          usedFor: ['Safety', 'Compliance'],
+          description: 'Comprehensive safety inspection template',
+          status: 'active'
+        }
+      ];
+
+      // Select first template by default
+      selectedTemplateId = allTemplates[0].id;
+      renderTemplates();
+    }
+
+    function renderTemplates() {
+      const gridContainer = document.getElementById('templatesGrid');
+      
+      if (!gridContainer) return;
+      
+      if (allTemplates.length === 0) {
+        gridContainer.innerHTML = '<div class="template-empty"><p>No templates found. Create a new template to get started.</p></div>';
+        return;
+      }
+
+      // Render template cards
+      let cardsHtml = '';
+      allTemplates.forEach(template => {
+        const isSelected = template.id === selectedTemplateId;
+        const lastUsedText = template.lastUsed 
+          ? formatDate(template.lastUsed) 
+          : 'never used';
+
+        cardsHtml += `
+          <div class="template-card ${isSelected ? 'selected' : ''}" onclick="selectTemplate(${template.id})">
+            <div class="template-dots">
+              <div class="template-dot"></div>
+              <div class="template-dot"></div>
+              <div class="template-dot"></div>
+            </div>
+            <div class="template-name">${template.name}</div>
+            <div class="template-meta">Last used: ${lastUsedText}</div>
+          </div>
+        `;
+      });
+
+      gridContainer.innerHTML = cardsHtml;
+
+      // Render selected template detail
+      renderTemplateDetail();
+    }
+
+    function renderTemplateDetail() {
+      const detailContainer = document.getElementById('templateDetail');
+      
+      if (!detailContainer) return;
+      
+      const template = allTemplates.find(t => t.id === selectedTemplateId);
+      
+      if (!template) {
+        detailContainer.innerHTML = '<div class="template-empty"><p>Select a template to view details</p></div>';
+        return;
+      }
+
+      let html = `
+        <div class="template-detail">
+          <div class="template-detail-header">
+            <h3 class="template-detail-title">${template.name}</h3>
+            <div class="template-tabs">
+              <div class="template-tab ${currentTemplateTab === 'preview' ? 'active' : ''}" onclick="switchTemplateTab('preview')">Preview</div>
+              <div class="template-tab ${currentTemplateTab === 'metadata' ? 'active' : ''}" onclick="switchTemplateTab('metadata')">Metadata</div>
+              <div class="template-tab ${currentTemplateTab === 'usedby' ? 'active' : ''}" onclick="switchTemplateTab('usedby')">Used By</div>
+              <div class="template-tab ${currentTemplateTab === 'actions' ? 'active' : ''}" onclick="switchTemplateTab('actions')">Actions</div>
+            </div>
+          </div>
+
+          <div class="template-info-row">
+            <div class="template-info-label">Created</div>
+            <div class="template-info-value">${template.created}</div>
+          </div>
+
+          <div class="template-info-row">
+            <div class="template-info-label">Updated</div>
+            <div class="template-info-value">${template.updated}</div>
+          </div>
+
+          <div class="template-section">
+            <h4 class="template-section-title">Used By</h4>
+            <div class="template-used-by">${template.usedBy.join(', ')}</div>
+          </div>
+
+          <div class="template-section">
+            <h4 class="template-section-title">Used For</h4>
+            <div class="template-used-for">
+      `;
+
+      // Render used for tags
+      template.usedFor.forEach(tag => {
+        html += `<span class="template-tag">${tag}</span>`;
+      });
+
+      html += `
+            </div>
+          </div>
+
+          <div class="template-actions">
+            <button class="template-action-btn edit" onclick="editTemplate(${template.id})">Edit</button>
+            <button class="template-action-btn duplicate" onclick="duplicateTemplate(${template.id})">Duplicate</button>
+            <button class="template-action-btn archive" onclick="archiveTemplate(${template.id})">Archive</button>
+            <button class="template-action-btn delete" onclick="deleteTemplate(${template.id})">Delete</button>
+          </div>
+        </div>
+      `;
+
+      detailContainer.innerHTML = html;
+    }
+
+    function selectTemplate(templateId) {
+      selectedTemplateId = templateId;
+      currentTemplateTab = 'preview';
+      renderTemplates();
+    }
+
+    function switchTemplateTab(tab) {
+      currentTemplateTab = tab;
+      renderTemplateDetail();
+    }
+
+    function createNewTemplate() {
+      const name = prompt('Enter template name:');
+      if (!name) return;
+
+      const newTemplate = {
+        id: allTemplates.length + 1,
+        name: name,
+        lastUsed: null,
+        created: 'Admin User',
+        updated: 'Admin User',
+        usedBy: [],
+        usedFor: [],
+        description: '',
+        status: 'active'
+      };
+
+      allTemplates.push(newTemplate);
+      selectedTemplateId = newTemplate.id;
+      renderTemplates();
+      alert(`Template "${name}" created successfully!`);
+    }
+
+    function editTemplate(templateId) {
+      const template = allTemplates.find(t => t.id === templateId);
+      if (!template) return;
+
+      alert(`Editing template: ${template.name}\n\nThis would open the template editor.`);
+    }
+
+    function duplicateTemplate(templateId) {
+      const template = allTemplates.find(t => t.id === templateId);
+      if (!template) return;
+
+      const newName = prompt(`Duplicate "${template.name}" as:`, `${template.name} (Copy)`);
+      if (!newName) return;
+
+      const newTemplate = {
+        ...template,
+        id: allTemplates.length + 1,
+        name: newName,
+        created: 'Admin User',
+        updated: 'Admin User'
+      };
+
+      allTemplates.push(newTemplate);
+      selectedTemplateId = newTemplate.id;
+      renderTemplates();
+      alert(`Template duplicated as "${newName}"!`);
+    }
+
+    function archiveTemplate(templateId) {
+      const template = allTemplates.find(t => t.id === templateId);
+      if (!template) return;
+
+      if (!confirm(`Archive template "${template.name}"?`)) return;
+
+      template.status = 'archived';
+      alert(`Template "${template.name}" has been archived.`);
+    }
+
+    function deleteTemplate(templateId) {
+      const template = allTemplates.find(t => t.id === templateId);
+      if (!template) return;
+
+      if (!confirm(`Are you sure you want to delete "${template.name}"? This action cannot be undone.`)) return;
+
+      allTemplates = allTemplates.filter(t => t.id !== templateId);
+      
+      if (selectedTemplateId === templateId) {
+        selectedTemplateId = allTemplates.length > 0 ? allTemplates[0].id : null;
+      }
+
+      renderTemplates();
+      alert(`Template "${template.name}" has been deleted.`);
     }
 
     // Initialize
