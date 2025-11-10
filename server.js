@@ -4,6 +4,7 @@ const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 const url = require('url');
 const crypto = require('crypto');
+const adminSettings = require('./api/admin-settings');
 
 const PORT = 3000;
 
@@ -122,38 +123,81 @@ async function handleApiEndpoint(req, res, pathname) {
     req.on('end', async () => {
       try {
         const { email, password } = JSON.parse(body);
+        console.log('🔐 Admin login attempt for:', email);
         
-        // Validate credentials
-        if (email === TEST_ADMIN.email && password === TEST_ADMIN.password) {
-          // Generate token
-          const token = crypto.randomBytes(32).toString('hex');
-          const adminData = {
-            email: TEST_ADMIN.email,
-            name: TEST_ADMIN.name,
-            role: TEST_ADMIN.role,
-            loginTime: Date.now()
-          };
-          
-          // Store token
-          adminTokens.set(token, adminData);
-          
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({
-            ok: true,
-            token,
-            user: {
-              email: adminData.email,
-              name: adminData.name,
-              role: adminData.role
-            }
-          }));
-        } else {
+        // Use Supabase authentication
+        const { createClient } = require('@supabase/supabase-js');
+        const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://icbfadlizwwonymqdclb.supabase.co';
+        const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljYmZhZGxpend3b255bXFkY2xiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgwMzU4OTUsImV4cCI6MjA3MzYxMTg5NX0.sQNGjFdC-WM0nSdGucgx3DelUJ5KJXh6S8J54xWUEu0';
+        
+        console.log('📡 Connecting to Supabase:', SUPABASE_URL);
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        console.log('🔑 Attempting authentication...');
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        
+        if (authError) {
+          console.error('❌ Auth error:', authError.message, authError);
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: false, error: authError.message || 'Invalid email or password' }));
+          return;
+        }
+        
+        if (!authData.session) {
+          console.error('❌ No session returned');
           res.writeHead(401, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ ok: false, error: 'Invalid email or password' }));
+          return;
         }
+        
+        console.log('✅ Authentication successful for user:', authData.user.id);
+        
+        // Check if user is admin
+        console.log('🔍 Checking admin profile...');
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role, status, admin_role, full_name')
+          .eq('user_id', authData.user.id)
+          .single();
+        
+        if (profileError) {
+          console.error('❌ Profile error:', profileError.message);
+        }
+        
+        console.log('📋 Profile found:', profile);
+        
+        const isAdmin = profile?.role === 'admin' || 
+                        profile?.admin_role === 'super_admin' || 
+                        profile?.admin_role === 'editor';
+        
+        console.log('🔐 Is admin?', isAdmin);
+        
+        if (!isAdmin) {
+          console.error('❌ User is not admin');
+          res.writeHead(403, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: false, error: 'Not authorized as admin' }));
+          return;
+        }
+        
+        console.log('✅ Admin login successful! Token:', authData.session.access_token.substring(0, 20) + '...');
+        
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          ok: true,
+          token: authData.session.access_token,
+          user: {
+            email: authData.user.email,
+            name: profile?.full_name || authData.user.email,
+            role: profile?.admin_role || profile?.role
+          }
+        }));
       } catch (error) {
+        console.error('❌ Admin login error:', error);
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ ok: false, error: 'Invalid request' }));
+        res.end(JSON.stringify({ ok: false, error: 'Invalid request: ' + error.message }));
       }
     });
     return;
@@ -164,28 +208,25 @@ async function handleApiEndpoint(req, res, pathname) {
     const auth = req.headers.authorization || '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
 
-    if (!token) {
-      res.writeHead(401, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ ok: false, error: 'No token' }));
-      return;
-    }
-
-    const adminData = adminTokens.get(token);
-    if (adminData) {
-      // Token is valid
+    console.log('🔍 Verifying admin token...');
+    
+    const verifyResult = await adminSettings.verifyAdmin(token);
+    
+    if (verifyResult.ok) {
+      console.log('✅ Token verified successfully');
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
         ok: true,
         isAdmin: true,
         user: {
-          email: adminData.email,
-          name: adminData.name,
-          role: adminData.role
+          email: verifyResult.user.email,
+          id: verifyResult.user.id
         }
       }));
     } else {
+      console.log('❌ Token verification failed:', verifyResult.error);
       res.writeHead(401, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ ok: false, error: 'Invalid token' }));
+      res.end(JSON.stringify({ ok: false, error: verifyResult.error }));
     }
     return;
   }
@@ -209,7 +250,8 @@ async function handleApiEndpoint(req, res, pathname) {
     const auth = req.headers.authorization || '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
 
-    if (!token || !adminTokens.has(token)) {
+    const verifyResult = await adminSettings.verifyAdmin(token);
+    if (!verifyResult.ok) {
       res.writeHead(401, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: false, error: 'Unauthorized' }));
       return;
@@ -261,7 +303,8 @@ async function handleApiEndpoint(req, res, pathname) {
     const auth = req.headers.authorization || '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
 
-    if (!token || !adminTokens.has(token)) {
+    const verifyResult = await adminSettings.verifyAdmin(token);
+    if (!verifyResult.ok) {
       res.writeHead(401, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: false, error: 'Unauthorized' }));
       return;
@@ -332,7 +375,8 @@ async function handleApiEndpoint(req, res, pathname) {
     const auth = req.headers.authorization || '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
 
-    if (!token || !adminTokens.has(token)) {
+    const verifyResult = await adminSettings.verifyAdmin(token);
+    if (!verifyResult.ok) {
       res.writeHead(401, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: false, error: 'Unauthorized' }));
       return;
@@ -387,7 +431,8 @@ async function handleApiEndpoint(req, res, pathname) {
     const auth = req.headers.authorization || '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
 
-    if (!token || !adminTokens.has(token)) {
+    const verifyResult = await adminSettings.verifyAdmin(token);
+    if (!verifyResult.ok) {
       res.writeHead(401, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: false, error: 'Unauthorized' }));
       return;
@@ -432,7 +477,8 @@ async function handleApiEndpoint(req, res, pathname) {
     const auth = req.headers.authorization || '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
 
-    if (!token || !adminTokens.has(token)) {
+    const verifyResult = await adminSettings.verifyAdmin(token);
+    if (!verifyResult.ok) {
       res.writeHead(401, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: false, error: 'Unauthorized' }));
       return;
@@ -472,6 +518,331 @@ async function handleApiEndpoint(req, res, pathname) {
         res.end(JSON.stringify({ ok: false, error: error.message }));
       }
     });
+    return;
+  }
+
+  // System Settings Endpoints
+  if (pathname === '/api/admin-settings') {
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    const verifyResult = await adminSettings.verifyAdmin(token);
+    
+    if (!verifyResult.ok) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: 'Unauthorized' }));
+      return;
+    }
+
+    if (req.method === 'GET') {
+      const result = await adminSettings.getSystemSettings();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
+    } else if (req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', async () => {
+        try {
+          const { key, value } = JSON.parse(body);
+          const result = await adminSettings.updateSystemSetting(key, value, verifyResult.user.id);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result));
+        } catch (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: false, error: 'Invalid request' }));
+        }
+      });
+    }
+    return;
+  }
+
+  // Feature Flags Endpoints
+  if (pathname === '/api/admin-feature-flags') {
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    const verifyResult = await adminSettings.verifyAdmin(token);
+    
+    if (!verifyResult.ok) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: 'Unauthorized' }));
+      return;
+    }
+
+    if (req.method === 'GET') {
+      const result = await adminSettings.getFeatureFlags();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
+    } else if (req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', async () => {
+        try {
+          const { id, enabled } = JSON.parse(body);
+          const result = await adminSettings.updateFeatureFlag(id, enabled, verifyResult.user.id);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result));
+        } catch (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: false, error: 'Invalid request' }));
+        }
+      });
+    }
+    return;
+  }
+
+  // Admin Users Endpoints
+  if (pathname === '/api/admin-users-roles') {
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    const verifyResult = await adminSettings.verifyAdmin(token);
+    
+    if (!verifyResult.ok) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: 'Unauthorized' }));
+      return;
+    }
+
+    if (req.method === 'GET') {
+      const result = await adminSettings.getAdminUsers();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
+    } else if (req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', async () => {
+        try {
+          const { userId, role } = JSON.parse(body);
+          const result = await adminSettings.updateUserRole(userId, role, verifyResult.user.id);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result));
+        } catch (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: false, error: 'Invalid request' }));
+        }
+      });
+    }
+    return;
+  }
+
+  // Email Settings Endpoints
+  if (pathname === '/api/admin-email-settings') {
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    const verifyResult = await adminSettings.verifyAdmin(token);
+    
+    if (!verifyResult.ok) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: 'Unauthorized' }));
+      return;
+    }
+
+    if (req.method === 'GET') {
+      const result = await adminSettings.getEmailSettings();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
+    } else if (req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', async () => {
+        try {
+          const settings = JSON.parse(body);
+          const result = await adminSettings.updateEmailSettings(settings, verifyResult.user.id);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result));
+        } catch (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: false, error: 'Invalid request' }));
+        }
+      });
+    }
+    return;
+  }
+
+  // API Keys Endpoints
+  if (pathname === '/api/admin-api-keys') {
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    const verifyResult = await adminSettings.verifyAdmin(token);
+    
+    if (!verifyResult.ok) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: 'Unauthorized' }));
+      return;
+    }
+
+    if (req.method === 'GET') {
+      const result = await adminSettings.getAPIKeys();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
+    } else if (req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', async () => {
+        try {
+          const { name, environment } = JSON.parse(body);
+          const result = await adminSettings.createAPIKey(name, environment, verifyResult.user.id);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result));
+        } catch (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: false, error: 'Invalid request' }));
+        }
+      });
+    } else if (req.method === 'DELETE') {
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', async () => {
+        try {
+          const { keyId } = JSON.parse(body);
+          const result = await adminSettings.revokeAPIKey(keyId, verifyResult.user.id);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result));
+        } catch (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: false, error: 'Invalid request' }));
+        }
+      });
+    }
+    return;
+  }
+
+  // Activity Logs Endpoints
+  if (pathname.startsWith('/api/admin-logs')) {
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    const verifyResult = await adminSettings.verifyAdmin(token);
+    
+    if (!verifyResult.ok) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: 'Unauthorized' }));
+      return;
+    }
+
+    const parsedUrl = url.parse(req.url, true);
+    const filters = { level: parsedUrl.query.level };
+    
+    const result = await adminSettings.getActivityLogs(filters);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(result));
+    return;
+  }
+
+  // Workspaces Endpoints
+  if (pathname === '/api/admin-workspaces') {
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    const verifyResult = await adminSettings.verifyAdmin(token);
+    
+    if (!verifyResult.ok) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: 'Unauthorized' }));
+      return;
+    }
+
+    if (req.method === 'GET') {
+      const result = await adminSettings.getWorkspaces();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
+    } else if (req.method === 'PUT') {
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', async () => {
+        try {
+          const { id, updates } = JSON.parse(body);
+          const result = await adminSettings.updateWorkspace(id, updates, verifyResult.user.id);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result));
+        } catch (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: false, error: 'Invalid request' }));
+        }
+      });
+    } else if (req.method === 'DELETE') {
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', async () => {
+        try {
+          const { id } = JSON.parse(body);
+          const result = await adminSettings.deleteWorkspace(id, verifyResult.user.id);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result));
+        } catch (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: false, error: 'Invalid request' }));
+        }
+      });
+    }
+    return;
+  }
+
+  // Templates Endpoints
+  if (pathname === '/api/admin-templates') {
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    const verifyResult = await adminSettings.verifyAdmin(token);
+    
+    if (!verifyResult.ok) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: 'Unauthorized' }));
+      return;
+    }
+
+    if (req.method === 'GET') {
+      const result = await adminSettings.getTemplates();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
+    } else if (req.method === 'PUT') {
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', async () => {
+        try {
+          const { id, updates } = JSON.parse(body);
+          const result = await adminSettings.updateTemplate(id, updates, verifyResult.user.id);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result));
+        } catch (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: false, error: 'Invalid request' }));
+        }
+      });
+    } else if (req.method === 'DELETE') {
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', async () => {
+        try {
+          const { id } = JSON.parse(body);
+          const result = await adminSettings.deleteTemplate(id, verifyResult.user.id);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result));
+        } catch (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: false, error: 'Invalid request' }));
+        }
+      });
+    }
+    return;
+  }
+
+  // Backups Endpoints
+  if (pathname === '/api/admin-backups') {
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    const verifyResult = await adminSettings.verifyAdmin(token);
+    
+    if (!verifyResult.ok) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: 'Unauthorized' }));
+      return;
+    }
+
+    if (req.method === 'GET') {
+      const result = await adminSettings.getBackups();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
+    } else if (req.method === 'POST') {
+      const result = await adminSettings.createBackup(verifyResult.user.id);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
+    }
     return;
   }
 

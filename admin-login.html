@@ -319,16 +319,22 @@
                 
                 const data = await response.json();
                 
+                console.log('Login response:', data);
+                console.log('Token received:', data.token);
+                
                 if (data.ok && data.token) {
                     // Store admin token
                     localStorage.setItem('adminToken', data.token);
                     localStorage.setItem('adminUser', JSON.stringify(data.user));
+                    
+                    console.log('Token stored in localStorage');
                     
                     showAlert('Login successful! Redirecting...', 'success');
                     setTimeout(() => {
                         window.location.href = '/admin.html';
                     }, 1000);
                 } else {
+                    console.error('Login failed:', data.error);
                     showAlert(data.error || 'Invalid credentials. Please try again.');
                     loginBtn.disabled = false;
                     loginBtn.innerHTML = 'Sign in to Admin';

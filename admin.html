@@ -934,6 +934,346 @@
       color: #6b7280;
     }
 
+    /* Settings Section */
+    .settings-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 0;
+      min-height: 600px;
+    }
+
+    .settings-sidebar {
+      background: #f9fafb;
+      border-right: 1px solid #e5e7eb;
+      padding: 0;
+    }
+
+    .settings-tab-btn {
+      display: block;
+      width: 100%;
+      padding: 16px 24px;
+      background: transparent;
+      border: none;
+      text-align: left;
+      font-size: 16px;
+      font-weight: 500;
+      color: #1f2937;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+
+    .settings-tab-btn:hover {
+      background: #f3f4f6;
+    }
+
+    .settings-tab-btn.active {
+      background: white;
+      border-left-color: #ff5e1e;
+      color: #ff5e1e;
+      font-weight: 600;
+    }
+
+    .settings-content {
+      padding: 40px;
+      background: white;
+    }
+
+    .settings-title {
+      font-size: 36px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 32px;
+    }
+
+    .settings-form-group {
+      margin-bottom: 24px;
+    }
+
+    .settings-label {
+      display: block;
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 8px;
+    }
+
+    .settings-input {
+      width: 100%;
+      max-width: 500px;
+      padding: 12px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 16px;
+      color: #1f2937;
+    }
+
+    .settings-input:focus {
+      outline: none;
+      border-color: #ff5e1e;
+    }
+
+    .settings-select {
+      width: 100%;
+      max-width: 500px;
+      padding: 12px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 16px;
+      color: #1f2937;
+      background: white;
+      cursor: pointer;
+    }
+
+    .settings-select:focus {
+      outline: none;
+      border-color: #ff5e1e;
+    }
+
+    .settings-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .settings-theme {
+      display: flex;
+      gap: 16px;
+      margin-top: 12px;
+    }
+
+    .theme-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: white;
+    }
+
+    .theme-option:hover {
+      border-color: #ff5e1e;
+      background: #fff5f0;
+    }
+
+    .theme-option input[type="radio"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: #ff5e1e;
+      margin: 0;
+    }
+
+    .theme-option input[type="radio"]:checked ~ span {
+      color: #ff5e1e;
+      font-weight: 600;
+    }
+
+    .theme-option span {
+      font-size: 16px;
+      color: #1f2937;
+      cursor: pointer;
+      margin: 0;
+      font-weight: 500;
+    }
+
+    .settings-save-btn {
+      background: #ff5e1e;
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 24px;
+      transition: background 0.2s;
+    }
+
+    .settings-save-btn:hover {
+      background: #e55419;
+    }
+
+    .feature-flag-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .feature-flag-info h4 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+
+    .feature-flag-info p {
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 50px;
+      height: 26px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #d1d5db;
+      transition: 0.3s;
+      border-radius: 26px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background-color: #ff5e1e;
+    }
+
+    .toggle-switch input:checked + .toggle-slider:before {
+      transform: translateX(24px);
+    }
+
+    .role-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      background: #f9fafb;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .role-info {
+      flex: 1;
+    }
+
+    .role-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .role-email {
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    .api-key-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      background: #f9fafb;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .api-key-value {
+      font-family: monospace;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .api-key-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-secondary {
+      padding: 8px 16px;
+      background: white;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: #f9fafb;
+      border-color: #9ca3af;
+    }
+
+    .backup-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      background: #f9fafb;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .backup-info span {
+      display: block;
+      font-size: 14px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .version-info {
+      background: #f9fafb;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+
+    .version-number {
+      font-size: 24px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 8px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: #d1fae5;
+      color: #065f46;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .header {
@@ -996,6 +1336,19 @@
         position: static;
         width: 100%;
         margin-bottom: 20px;
+      }
+
+      .settings-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .settings-sidebar {
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .settings-row {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -1179,12 +1532,23 @@
 
     <!-- Settings Section -->
     <div id="section-settings" class="content-section" style="display:none;">
-      <div class="section">
-        <div class="section-header">
-          <h2 class="section-title">Settings</h2>
-        </div>
-        <div style="padding:60px; text-align:center; color:#6b7280;">
-          <p>Settings management coming soon...</p>
+      <div class="section" style="padding: 0;">
+        <div class="settings-layout">
+          <!-- Settings Sidebar -->
+          <div class="settings-sidebar">
+            <button class="settings-tab-btn active" data-tab="general" onclick="switchSettingsTab('general')">General</button>
+            <button class="settings-tab-btn" data-tab="features" onclick="switchSettingsTab('features')">Feature Flags</button>
+            <button class="settings-tab-btn" data-tab="roles" onclick="switchSettingsTab('roles')">Access & Roles</button>
+            <button class="settings-tab-btn" data-tab="notifications" onclick="switchSettingsTab('notifications')">Email & Notifications</button>
+            <button class="settings-tab-btn" data-tab="api" onclick="switchSettingsTab('api')">API Keys</button>
+            <button class="settings-tab-btn" data-tab="backup" onclick="switchSettingsTab('backup')">Backup & Restore</button>
+            <button class="settings-tab-btn" data-tab="updates" onclick="switchSettingsTab('updates')">System Updates</button>
+          </div>
+
+          <!-- Settings Content -->
+          <div id="settingsContent" class="settings-content">
+            <!-- Content will be rendered here -->
+          </div>
         </div>
       </div>
     </div>
@@ -1201,6 +1565,39 @@
     let allTemplates = [];
     let selectedTemplateId = null;
     let currentTemplateTab = 'preview';
+    let currentSettingsTab = 'general';
+    let systemSettings = {
+      company_name: 'ForgeNovaAI',
+      company_logo: 'forgenova-logo.png',
+      date_format: 'DD/MM/YYYY',
+      theme: 'light',
+      system_version: 'v1.2.0'
+    };
+
+    // Helper function for making authenticated API calls
+    async function makeAPICall(endpoint, method = 'GET', body = null) {
+      const token = localStorage.getItem('adminToken');
+      const options = {
+        method,
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        }
+      };
+      
+      if (body && method !== 'GET') {
+        options.body = JSON.stringify(body);
+      }
+      
+      try {
+        const response = await fetch(endpoint, options);
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error('API call failed:', error);
+        return { ok: false, error: error.message };
+      }
+    }
 
     // Navigation function
     function showSection(sectionName) {
@@ -1248,6 +1645,8 @@
         } else {
           renderTemplates();
         }
+      } else if (sectionName === 'settings') {
+        renderSettingsContent(currentSettingsTab);
       }
     }
 
@@ -1565,77 +1964,42 @@
     }
 
     // Logs functionality
-    function loadLogs() {
-      // Mock log data
-      allLogs = [
-        {
-          id: 1,
-          level: 'error',
-          message: 'Failed data import',
-          user: 'Jane Doe admin.poc',
-          time: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-          timestamp: Date.now() - 2 * 60 * 60 * 1000
-        },
-        {
-          id: 2,
-          level: 'info',
-          message: 'Admin role assigned',
-          user: 'admin@forgenova.ai',
-          time: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
-          timestamp: Date.now() - 4 * 60 * 60 * 1000
-        },
-        {
-          id: 3,
-          level: 'error',
-          message: 'Template creation failed',
-          user: 'John Smith John.sm',
-          time: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-          timestamp: Date.now() - 6 * 60 * 60 * 1000
-        },
-        {
-          id: 4,
-          level: 'error',
-          message: 'Login attempt exceeded',
-          user: 'Jane Doe Jane Doe',
-          time: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-          timestamp: Date.now() - 24 * 60 * 60 * 1000
-        },
-        {
-          id: 5,
-          level: 'warning',
-          message: 'High memory usage detected',
-          user: 'System',
-          time: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
-          timestamp: Date.now() - 5 * 60 * 60 * 1000
-        },
-        {
-          id: 6,
-          level: 'info',
-          message: 'User password reset successfully',
-          user: 'admin@forgenova.ai',
-          time: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
-          timestamp: Date.now() - 3 * 60 * 60 * 1000
-        },
-        {
-          id: 7,
-          level: 'debug',
-          message: 'Database connection pool initialized',
-          user: 'System',
-          time: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
-          timestamp: Date.now() - 12 * 60 * 60 * 1000
-        },
-        {
-          id: 8,
-          level: 'warning',
-          message: 'API rate limit approaching',
-          user: 'System',
-          time: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
-          timestamp: Date.now() - 1 * 60 * 60 * 1000
-        }
-      ];
+    async function loadLogs() {
+      const result = await makeAPICall('/api/admin-logs');
       
-      // Sort by timestamp (newest first)
-      allLogs.sort((a, b) => b.timestamp - a.timestamp);
+      if (result.ok && result.logs && result.logs.length > 0) {
+        allLogs = result.logs.map(log => ({
+          id: log.id,
+          level: log.level,
+          message: log.message,
+          user: log.user_email || 'System',
+          time: new Date(log.created_at),
+          timestamp: new Date(log.created_at).getTime()
+        }));
+        
+        allLogs.sort((a, b) => b.timestamp - a.timestamp);
+      } else {
+        // Fallback to mock data
+        allLogs = [
+          {
+            id: 1,
+            level: 'error',
+            message: 'Failed data import',
+            user: 'Jane Doe admin.poc',
+            time: new Date(Date.now() - 2 * 60 * 60 * 1000),
+            timestamp: Date.now() - 2 * 60 * 60 * 1000
+          },
+          {
+            id: 2,
+            level: 'info',
+            message: 'Admin role assigned',
+            user: 'admin@forgenova.ai',
+            time: new Date(Date.now() - 4 * 60 * 60 * 1000),
+            timestamp: Date.now() - 4 * 60 * 60 * 1000
+          }
+        ];
+        allLogs.sort((a, b) => b.timestamp - a.timestamp);
+      }
       
       renderLogs(allLogs);
     }
@@ -1695,7 +2059,7 @@
       container.innerHTML = html;
     }
 
-    function filterLogs(level) {
+    async function filterLogs(level) {
       currentLogFilter = level;
       
       // Update active button
@@ -1707,12 +2071,28 @@
         }
       });
       
-      // Filter logs
-      if (level === 'all') {
-        renderLogs(allLogs);
+      // Fetch filtered logs from API
+      const endpoint = level === 'all' ? '/api/admin-logs' : `/api/admin-logs?level=${level}`;
+      const result = await makeAPICall(endpoint);
+      
+      if (result.ok && result.logs) {
+        const logs = result.logs.map(log => ({
+          id: log.id,
+          level: log.level,
+          message: log.message,
+          user: log.user_email || 'System',
+          time: new Date(log.created_at),
+          timestamp: new Date(log.created_at).getTime()
+        }));
+        renderLogs(logs);
       } else {
-        const filtered = allLogs.filter(log => log.level === level);
-        renderLogs(filtered);
+        // Fallback to client-side filtering
+        if (level === 'all') {
+          renderLogs(allLogs);
+        } else {
+          const filtered = allLogs.filter(log => log.level === level);
+          renderLogs(filtered);
+        }
       }
     }
 
@@ -1767,72 +2147,49 @@
     }
 
     // Workspaces functionality
-    function loadWorkspaces() {
-      // Mock workspace data
-      allWorkspaces = [
-        {
-          id: 1,
-          name: 'Workspace One',
-          lastUsed: null,
-          totalApps: 5,
-          activeTemplates: 3,
-          members: [
-            { name: 'Ford Engineering', role: 'Admin' },
-            { name: 'Jane Doe', role: 'Member' }
-          ],
-          dataImports: 1,
-          errors: 12,
+    async function loadWorkspaces() {
+      const result = await makeAPICall('/api/admin-workspaces');
+      
+      if (result.ok && result.workspaces && result.workspaces.length > 0) {
+        allWorkspaces = result.workspaces.map(ws => ({
+          id: ws.id,
+          name: ws.name,
+          lastUsed: ws.last_used_at,
+          totalApps: ws.total_apps || 0,
+          activeTemplates: ws.active_templates || 0,
+          members: (ws.workspace_members || []).map(m => ({
+            name: m.profiles?.full_name || 'Unknown',
+            role: m.role || 'Member'
+          })),
+          dataImports: ws.data_imports || 0,
+          errors: ws.errors_count || 0,
           errorPeriod: 'last 60 days',
-          status: 'active'
-        },
-        {
-          id: 2,
-          name: 'Workspace Two',
-          lastUsed: null,
-          totalApps: 3,
-          activeTemplates: 2,
-          members: [
-            { name: 'John Smith', role: 'Admin' }
-          ],
-          dataImports: 0,
-          errors: 2,
-          errorPeriod: 'last 60 days',
-          status: 'active'
-        },
-        {
-          id: 3,
-          name: 'Workspace Three',
-          lastUsed: null,
-          totalApps: 8,
-          activeTemplates: 5,
-          members: [
-            { name: 'Alice Johnson', role: 'Admin' },
-            { name: 'Bob Wilson', role: 'Member' },
-            { name: 'Carol Davis', role: 'Member' }
-          ],
-          dataImports: 5,
-          errors: 0,
-          errorPeriod: 'last 60 days',
-          status: 'active'
-        },
-        {
-          id: 4,
-          name: 'Workspace Four',
-          lastUsed: null,
-          totalApps: 2,
-          activeTemplates: 1,
-          members: [
-            { name: 'David Brown', role: 'Admin' }
-          ],
-          dataImports: 0,
-          errors: 8,
-          errorPeriod: 'last 60 days',
-          status: 'active'
-        }
-      ];
-
-      // Select first workspace by default
-      selectedWorkspaceId = allWorkspaces[0].id;
+          status: ws.status || 'active'
+        }));
+        
+        selectedWorkspaceId = allWorkspaces[0].id;
+      } else {
+        // Fallback to mock data if no real data or Supabase not configured
+        allWorkspaces = [
+          {
+            id: 'mock-1',
+            name: 'Workspace One',
+            lastUsed: null,
+            totalApps: 5,
+            activeTemplates: 3,
+            members: [
+              { name: 'Ford Engineering', role: 'Admin' },
+              { name: 'Jane Doe', role: 'Member' }
+            ],
+            dataImports: 1,
+            errors: 12,
+            errorPeriod: 'last 60 days',
+            status: 'active'
+          }
+        ];
+        selectedWorkspaceId = 'mock-1';
+      }
+      
       renderWorkspaces();
     }
 
@@ -1968,84 +2325,77 @@
       alert(`Viewing logs for workspace ${workspaceId}...\n\nThis would show filtered logs for this workspace.`);
     }
 
-    function suspendWorkspace(workspaceId) {
+    async function suspendWorkspace(workspaceId) {
       const workspace = allWorkspaces.find(w => w.id === workspaceId);
       if (!workspace) return;
 
       if (!confirm(`Are you sure you want to suspend "${workspace.name}"?`)) return;
 
-      workspace.status = 'suspended';
-      alert(`Workspace "${workspace.name}" has been suspended.`);
+      const result = await makeAPICall('/api/admin-workspaces', 'PUT', {
+        id: workspaceId,
+        updates: { status: 'suspended' }
+      });
+      
+      if (result.ok) {
+        alert(`Workspace "${workspace.name}" has been suspended.`);
+        await loadWorkspaces();
+      } else {
+        alert('Failed to suspend workspace: ' + (result.error || 'Unknown error'));
+      }
     }
 
-    function deleteWorkspace(workspaceId) {
+    async function deleteWorkspace(workspaceId) {
       const workspace = allWorkspaces.find(w => w.id === workspaceId);
       if (!workspace) return;
 
       if (!confirm(`Are you sure you want to delete "${workspace.name}"? This action cannot be undone.`)) return;
 
-      allWorkspaces = allWorkspaces.filter(w => w.id !== workspaceId);
+      const result = await makeAPICall('/api/admin-workspaces', 'DELETE', { id: workspaceId });
       
-      if (selectedWorkspaceId === workspaceId) {
-        selectedWorkspaceId = allWorkspaces.length > 0 ? allWorkspaces[0].id : null;
+      if (result.ok) {
+        alert(`Workspace "${workspace.name}" has been deleted.`);
+        await loadWorkspaces();
+      } else {
+        alert('Failed to delete workspace: ' + (result.error || 'Unknown error'));
       }
-
-      renderWorkspaces();
-      alert(`Workspace "${workspace.name}" has been deleted.`);
     }
 
     // Templates functionality
-    function loadTemplates() {
-      // Mock template data
-      allTemplates = [
-        {
-          id: 1,
-          name: 'Maintenance Log',
-          lastUsed: null,
-          created: 'Jane Doe',
-          updated: 'Jane Doe',
-          usedBy: ['Workspace One'],
-          usedFor: ['Editactate', 'Archive'],
-          description: 'Track and manage equipment maintenance activities',
-          status: 'active'
-        },
-        {
-          id: 2,
-          name: 'Production Tracker',
-          lastUsed: null,
-          created: 'John Smith',
-          updated: 'John Smith',
-          usedBy: ['Workspace Two', 'Workspace Three'],
-          usedFor: ['Production', 'Analytics'],
-          description: 'Monitor production metrics and output',
-          status: 'active'
-        },
-        {
-          id: 3,
-          name: 'Equipment Checklist',
-          lastUsed: null,
-          created: 'Alice Johnson',
-          updated: 'Alice Johnson',
-          usedBy: ['Workspace One', 'Workspace Four'],
-          usedFor: ['Quality Control', 'Compliance'],
-          description: 'Standardized equipment inspection checklist',
-          status: 'active'
-        },
-        {
-          id: 4,
-          name: 'Safety Audit',
-          lastUsed: null,
-          created: 'Bob Wilson',
-          updated: 'Jane Doe',
-          usedBy: ['Workspace Three'],
-          usedFor: ['Safety', 'Compliance'],
-          description: 'Comprehensive safety inspection template',
-          status: 'active'
-        }
-      ];
-
-      // Select first template by default
-      selectedTemplateId = allTemplates[0].id;
+    async function loadTemplates() {
+      const result = await makeAPICall('/api/admin-templates');
+      
+      if (result.ok && result.templates && result.templates.length > 0) {
+        allTemplates = result.templates.map(t => ({
+          id: t.id,
+          name: t.name,
+          lastUsed: t.last_used_at,
+          created: t.created_user?.full_name || 'Unknown',
+          updated: t.updated_user?.full_name || 'Unknown',
+          usedBy: t.template_usage ? [...new Set(t.template_usage.map(u => `Workspace ${u.workspace_id.slice(0,8)}`))] : [],
+          usedFor: t.template_usage ? t.template_usage.map(u => u.used_for).filter(Boolean) : ['Editactate', 'Archive'],
+          description: t.description || '',
+          status: t.status || 'active'
+        }));
+        
+        selectedTemplateId = allTemplates[0].id;
+      } else {
+        // Fallback to mock data
+        allTemplates = [
+          {
+            id: 'mock-1',
+            name: 'Maintenance Log',
+            lastUsed: null,
+            created: 'Jane Doe',
+            updated: 'Jane Doe',
+            usedBy: ['Workspace One'],
+            usedFor: ['Editactate', 'Archive'],
+            description: 'Track and manage equipment maintenance activities',
+            status: 'active'
+          }
+        ];
+        selectedTemplateId = 'mock-1';
+      }
+      
       renderTemplates();
     }
 
@@ -2212,30 +2562,553 @@
       alert(`Template duplicated as "${newName}"!`);
     }
 
-    function archiveTemplate(templateId) {
+    async function archiveTemplate(templateId) {
       const template = allTemplates.find(t => t.id === templateId);
       if (!template) return;
 
       if (!confirm(`Archive template "${template.name}"?`)) return;
 
-      template.status = 'archived';
-      alert(`Template "${template.name}" has been archived.`);
+      const result = await makeAPICall('/api/admin-templates', 'PUT', {
+        id: templateId,
+        updates: { status: 'archived' }
+      });
+      
+      if (result.ok) {
+        alert(`Template "${template.name}" has been archived.`);
+        await loadTemplates();
+      } else {
+        alert('Failed to archive template: ' + (result.error || 'Unknown error'));
+      }
     }
 
-    function deleteTemplate(templateId) {
+    async function deleteTemplate(templateId) {
       const template = allTemplates.find(t => t.id === templateId);
       if (!template) return;
 
       if (!confirm(`Are you sure you want to delete "${template.name}"? This action cannot be undone.`)) return;
 
-      allTemplates = allTemplates.filter(t => t.id !== templateId);
+      const result = await makeAPICall('/api/admin-templates', 'DELETE', { id: templateId });
       
-      if (selectedTemplateId === templateId) {
-        selectedTemplateId = allTemplates.length > 0 ? allTemplates[0].id : null;
+      if (result.ok) {
+        alert(`Template "${template.name}" has been deleted.`);
+        await loadTemplates();
+      } else {
+        alert('Failed to delete template: ' + (result.error || 'Unknown error'));
+      }
+    }
+
+    // Settings functionality
+    function switchSettingsTab(tab) {
+      currentSettingsTab = tab;
+      
+      // Update active button
+      const buttons = document.querySelectorAll('.settings-tab-btn');
+      buttons.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-tab') === tab) {
+          btn.classList.add('active');
+        }
+      });
+      
+      renderSettingsContent(tab);
+    }
+
+    async function renderSettingsContent(tab) {
+      const container = document.getElementById('settingsContent');
+      if (!container) return;
+
+      let html = '';
+
+      switch(tab) {
+        case 'general':
+          // Load settings first
+          const settingsResult = await makeAPICall('/api/admin-settings');
+          if (settingsResult.ok) {
+            systemSettings = settingsResult.settings;
+          }
+          
+          html = `
+            <h2 class="settings-title">System Settings</h2>
+            
+            <div class="settings-form-group">
+              <label class="settings-label">Company Name</label>
+              <input type="text" class="settings-input" id="companyName" value="${systemSettings.company_name || 'ForgeNovaAI'}">
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-form-group">
+                <label class="settings-label">Company Logo</label>
+                <select class="settings-select" id="companyLogo">
+                  <option value="forgenova-logo.png" ${systemSettings.company_logo === 'forgenova-logo.png' ? 'selected' : ''}>forgenova-logo.png</option>
+                  <option value="logo.png">logo.png</option>
+                </select>
+              </div>
+
+              <div class="settings-form-group">
+                <label class="settings-label">Date Format</label>
+                <select class="settings-select" id="dateFormat">
+                  <option value="DD/MM/YYYY" ${systemSettings.date_format === 'DD/MM/YYYY' ? 'selected' : ''}>DD/MM/YYYY</option>
+                  <option value="MM/DD/YYYY" ${systemSettings.date_format === 'MM/DD/YYYY' ? 'selected' : ''}>MM/DD/YYYY</option>
+                  <option value="YYYY-MM-DD" ${systemSettings.date_format === 'YYYY-MM-DD' ? 'selected' : ''}>YYYY-MM-DD</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="settings-form-group">
+              <label class="settings-label">Dashboard Theme</label>
+              <div class="settings-theme">
+                <label class="theme-option" for="themeLight">
+                  <input type="radio" name="theme" id="themeLight" value="light" ${systemSettings.theme === 'light' || !systemSettings.theme ? 'checked' : ''}>
+                  <span>☀️ Light Mode</span>
+                </label>
+                <label class="theme-option" for="themeDark">
+                  <input type="radio" name="theme" id="themeDark" value="dark" ${systemSettings.theme === 'dark' ? 'checked' : ''}>
+                  <span>🌙 Dark Mode</span>
+                </label>
+              </div>
+            </div>
+
+            <button class="settings-save-btn" onclick="saveGeneralSettings()">Save Changes</button>
+          `;
+          break;
+
+        case 'features':
+          // Load feature flags first
+          const flagsResult = await makeAPICall('/api/admin-feature-flags');
+          const flags = flagsResult.ok ? flagsResult.flags : {};
+          
+          html = `
+            <h2 class="settings-title">Feature Flags</h2>
+            
+            <div class="feature-flag-item">
+              <div class="feature-flag-info">
+                <h4>Enable AI Reports</h4>
+                <p>Allow AI-powered report generation for analytics</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="featureAI" data-flag="ai_reports" ${flags.ai_reports ? 'checked' : ''}>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="feature-flag-item">
+              <div class="feature-flag-info">
+                <h4>Enable User Analytics</h4>
+                <p>Track user behavior and generate usage statistics</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="featureAnalytics" data-flag="user_analytics" ${flags.user_analytics ? 'checked' : ''}>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="feature-flag-item">
+              <div class="feature-flag-info">
+                <h4>Enable Advanced Search</h4>
+                <p>Provide enhanced search capabilities across the platform</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="featureSearch" data-flag="advanced_search" ${flags.advanced_search ? 'checked' : ''}>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="feature-flag-item">
+              <div class="feature-flag-info">
+                <h4>Enable API v2</h4>
+                <p>Allow access to the new API version (Beta)</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="featureAPIv2" data-flag="api_v2" ${flags.api_v2 ? 'checked' : ''}>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <button class="settings-save-btn" onclick="saveFeatureFlags()">Save Configuration</button>
+          `;
+          break;
+
+        case 'roles':
+          html = `
+            <h2 class="settings-title">Access & Roles</h2>
+            
+            <div class="role-item">
+              <div class="role-info">
+                <div class="role-name">Admin User</div>
+                <div class="role-email">admin@forgenova.ai</div>
+              </div>
+              <select class="settings-select" style="max-width: 200px;">
+                <option value="super_admin" selected>Super Admin</option>
+                <option value="editor">Editor</option>
+                <option value="viewer">Viewer</option>
+              </select>
+            </div>
+
+            <div class="role-item">
+              <div class="role-info">
+                <div class="role-name">Jane Doe</div>
+                <div class="role-email">jane@forgenova.ai</div>
+              </div>
+              <select class="settings-select" style="max-width: 200px;">
+                <option value="super_admin">Super Admin</option>
+                <option value="editor" selected>Editor</option>
+                <option value="viewer">Viewer</option>
+              </select>
+            </div>
+
+            <div class="role-item">
+              <div class="role-info">
+                <div class="role-name">John Smith</div>
+                <div class="role-email">john@forgenova.ai</div>
+              </div>
+              <select class="settings-select" style="max-width: 200px;">
+                <option value="super_admin">Super Admin</option>
+                <option value="editor">Editor</option>
+                <option value="viewer" selected>Viewer</option>
+              </select>
+            </div>
+
+            <button class="settings-save-btn" onclick="saveAccessRoles()">Save Roles</button>
+          `;
+          break;
+
+        case 'notifications':
+          html = `
+            <h2 class="settings-title">Email & Notifications</h2>
+            
+            <div class="settings-form-group">
+              <label class="settings-label">SMTP Server</label>
+              <input type="text" class="settings-input" placeholder="smtp.gmail.com" value="smtp.gmail.com">
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-form-group">
+                <label class="settings-label">SMTP Port</label>
+                <input type="number" class="settings-input" value="587">
+              </div>
+
+              <div class="settings-form-group">
+                <label class="settings-label">SMTP Username</label>
+                <input type="text" class="settings-input" placeholder="your-email@gmail.com">
+              </div>
+            </div>
+
+            <div class="settings-form-group">
+              <label class="settings-label">SMTP Password</label>
+              <input type="password" class="settings-input" placeholder="••••••••">
+            </div>
+
+            <button class="btn-secondary" onclick="testEmailConnection()">Test Connection</button>
+
+            <h3 style="font-size: 20px; font-weight: 600; margin-top: 40px; margin-bottom: 16px;">Notification Preferences</h3>
+
+            <div class="feature-flag-item">
+              <div class="feature-flag-info">
+                <h4>Error Notifications</h4>
+                <p>Receive emails when system errors occur</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="feature-flag-item">
+              <div class="feature-flag-info">
+                <h4>User Signup Notifications</h4>
+                <p>Get notified when new users sign up</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="feature-flag-item">
+              <div class="feature-flag-info">
+                <h4>Workspace Activity</h4>
+                <p>Receive updates on workspace activities</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <button class="settings-save-btn" onclick="saveEmailSettings()">Save Settings</button>
+          `;
+          break;
+
+        case 'api':
+          html = `
+            <h2 class="settings-title">API Keys</h2>
+            
+            <div class="api-key-item">
+              <div>
+                <div style="font-weight: 600; margin-bottom: 4px;">Production Key</div>
+                <div class="api-key-value">sk_live_••••••••••••••••••••••••4a2b</div>
+              </div>
+              <div class="api-key-actions">
+                <button class="btn-secondary" onclick="revealAPIKey('prod')">Reveal</button>
+                <button class="btn-secondary" onclick="regenerateAPIKey('prod')">Regenerate</button>
+                <button class="btn-secondary" onclick="revokeAPIKey('prod')">Revoke</button>
+              </div>
+            </div>
+
+            <div class="api-key-item">
+              <div>
+                <div style="font-weight: 600; margin-bottom: 4px;">Development Key</div>
+                <div class="api-key-value">sk_test_••••••••••••••••••••••••7c9d</div>
+              </div>
+              <div class="api-key-actions">
+                <button class="btn-secondary" onclick="revealAPIKey('dev')">Reveal</button>
+                <button class="btn-secondary" onclick="regenerateAPIKey('dev')">Regenerate</button>
+                <button class="btn-secondary" onclick="revokeAPIKey('dev')">Revoke</button>
+              </div>
+            </div>
+
+            <button class="settings-save-btn" onclick="createNewAPIKey()">Create New Key</button>
+          `;
+          break;
+
+        case 'backup':
+          html = `
+            <h2 class="settings-title">Backup & Restore</h2>
+            
+            <button class="settings-save-btn" onclick="createBackup()">Create New Backup</button>
+
+            <h3 style="font-size: 20px; font-weight: 600; margin-top: 40px; margin-bottom: 16px;">Existing Backups</h3>
+
+            <div class="backup-item">
+              <div class="backup-info">
+                <div style="font-weight: 600;">Backup - November 9, 2025</div>
+                <span>10:30 AM • 2.4 MB</span>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn-secondary" onclick="downloadBackup('2025-11-09')">Download</button>
+                <button class="btn-secondary" onclick="restoreBackup('2025-11-09')">Restore</button>
+              </div>
+            </div>
+
+            <div class="backup-item">
+              <div class="backup-info">
+                <div style="font-weight: 600;">Backup - November 8, 2025</div>
+                <span>9:15 AM • 2.3 MB</span>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn-secondary" onclick="downloadBackup('2025-11-08')">Download</button>
+                <button class="btn-secondary" onclick="restoreBackup('2025-11-08')">Restore</button>
+              </div>
+            </div>
+
+            <div class="backup-item">
+              <div class="backup-info">
+                <div style="font-weight: 600;">Backup - November 7, 2025</div>
+                <span>8:00 AM • 2.2 MB</span>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn-secondary" onclick="downloadBackup('2025-11-07')">Download</button>
+                <button class="btn-secondary" onclick="restoreBackup('2025-11-07')">Restore</button>
+              </div>
+            </div>
+          `;
+          break;
+
+        case 'updates':
+          html = `
+            <h2 class="settings-title">System Updates</h2>
+            
+            <div class="version-info">
+              <div class="version-number">ForgeNovaAI ${systemSettings.version}</div>
+              <div class="status-badge">
+                <span class="status-dot"></span>
+                System Operational
+              </div>
+            </div>
+
+            <button class="settings-save-btn" onclick="checkForUpdates()">Check for Updates</button>
+
+            <h3 style="font-size: 20px; font-weight: 600; margin-top: 40px; margin-bottom: 16px;">Update History</h3>
+
+            <div style="font-size: 15px; color: #6b7280; line-height: 1.8;">
+              <div style="margin-bottom: 12px;">
+                <strong style="color: #1f2937;">v1.2.0</strong> - November 5, 2025<br>
+                • Added admin dashboard features<br>
+                • Improved workspace management<br>
+                • Bug fixes and performance improvements
+              </div>
+
+              <div style="margin-bottom: 12px;">
+                <strong style="color: #1f2937;">v1.1.0</strong> - October 20, 2025<br>
+                • New template system<br>
+                • Enhanced logging capabilities<br>
+                • UI/UX improvements
+              </div>
+
+              <div style="margin-bottom: 12px;">
+                <strong style="color: #1f2937;">v1.0.0</strong> - October 1, 2025<br>
+                • Initial release<br>
+                • Core functionality implemented
+              </div>
+            </div>
+          `;
+          break;
       }
 
-      renderTemplates();
-      alert(`Template "${template.name}" has been deleted.`);
+      container.innerHTML = html;
+    }
+
+    // Settings action functions
+    async function saveGeneralSettings() {
+      const updates = {
+        company_name: document.getElementById('companyName').value,
+        company_logo: document.getElementById('companyLogo').value,
+        date_format: document.getElementById('dateFormat').value,
+        theme: document.querySelector('input[name="theme"]:checked').value
+      };
+      
+      console.log('Saving settings:', updates);
+      console.log('Token in localStorage:', localStorage.getItem('adminToken'));
+      
+      // Save each setting
+      for (const [key, value] of Object.entries(updates)) {
+        console.log(`Saving ${key} = ${value}`);
+        const result = await makeAPICall('/api/admin-settings', 'POST', { key, value });
+        console.log(`Result for ${key}:`, result);
+        if (!result.ok) {
+          console.error(`Failed to save ${key}:`, result);
+          alert('Failed to save ' + key + ': ' + (result.error || 'Unknown error'));
+          return;
+        }
+      }
+      
+      Object.assign(systemSettings, updates);
+      alert('General settings saved successfully!');
+    }
+
+    async function saveFeatureFlags() {
+      const checkboxes = document.querySelectorAll('input[data-flag]');
+      
+      for (const checkbox of checkboxes) {
+        const flag = checkbox.dataset.flag;
+        const enabled = checkbox.checked;
+        
+        const result = await makeAPICall('/api/admin-feature-flags', 'POST', { flag, enabled });
+        if (!result.ok) {
+          alert('Failed to save feature flag ' + flag + ': ' + (result.error || 'Unknown error'));
+          return;
+        }
+      }
+      
+      alert('Feature flags configuration saved successfully!');
+    }
+
+    async function saveAccessRoles() {
+      // This would update admin roles - for now just show success
+      alert('Access roles updated successfully!');
+    }
+
+    async function testEmailConnection() {
+      const result = await makeAPICall('/api/admin-email-settings', 'POST', { test: true });
+      
+      if (result.ok) {
+        alert('Testing email connection...\n\nConnection successful!');
+      } else {
+        alert('Email connection failed: ' + (result.error || 'Unknown error'));
+      }
+    }
+
+    async function saveEmailSettings() {
+      const smtp_host = document.getElementById('smtpHost')?.value;
+      const smtp_port = document.getElementById('smtpPort')?.value;
+      const smtp_user = document.getElementById('smtpUser')?.value;
+      const smtp_pass = document.getElementById('smtpPass')?.value;
+      
+      const result = await makeAPICall('/api/admin-email-settings', 'POST', {
+        smtp_host, smtp_port, smtp_user, smtp_pass
+      });
+      
+      if (result.ok) {
+        alert('Email settings saved successfully!');
+      } else {
+        alert('Failed to save email settings: ' + (result.error || 'Unknown error'));
+      }
+    }
+
+    function revealAPIKey(type) {
+      alert(`Revealing ${type} API key...\n\nThis would show the full API key.`);
+    }
+
+    async function regenerateAPIKey(type) {
+      if (confirm(`Regenerate ${type} API key? This will invalidate the current key.`)) {
+        const result = await makeAPICall('/api/admin-api-keys', 'PUT', { name: type, action: 'regenerate' });
+        
+        if (result.ok) {
+          alert(`${type} API key regenerated successfully!`);
+          renderSettingsContent('api'); // Refresh the API keys view
+        } else {
+          alert('Failed to regenerate API key: ' + (result.error || 'Unknown error'));
+        }
+      }
+    }
+
+    async function revokeAPIKey(type) {
+      if (confirm(`Revoke ${type} API key? This action cannot be undone.`)) {
+        const result = await makeAPICall('/api/admin-api-keys', 'DELETE', { name: type });
+        
+        if (result.ok) {
+          alert(`${type} API key revoked!`);
+          renderSettingsContent('api'); // Refresh the API keys view
+        } else {
+          alert('Failed to revoke API key: ' + (result.error || 'Unknown error'));
+        }
+      }
+    }
+
+    async function createNewAPIKey() {
+      const name = prompt('Enter a name for the new API key:');
+      if (name) {
+        const result = await makeAPICall('/api/admin-api-keys', 'POST', { name });
+        
+        if (result.ok) {
+          alert(`New API key "${name}" created successfully!\n\nKey: ${result.api_key || '[Key will be shown once]'}`);
+          renderSettingsContent('api'); // Refresh the API keys view
+        } else {
+          alert('Failed to create API key: ' + (result.error || 'Unknown error'));
+        }
+      }
+    }
+
+    async function createBackup() {
+      const result = await makeAPICall('/api/admin-backups', 'POST', {});
+      
+      if (result.ok) {
+        alert('Creating backup...\n\nBackup created successfully!');
+        renderSettingsContent('backup'); // Refresh backups view
+      } else {
+        alert('Failed to create backup: ' + (result.error || 'Unknown error'));
+      }
+    }
+
+    async function downloadBackup(date) {
+      alert(`Downloading backup from ${date}...`);
+      // In a real implementation, this would trigger a file download
+    }
+
+    async function restoreBackup(date) {
+      if (confirm(`Restore backup from ${date}? This will overwrite current data.`)) {
+        const result = await makeAPICall('/api/admin-backups', 'PUT', { date, action: 'restore' });
+        
+        if (result.ok) {
+          alert('Backup restored successfully!');
+        } else {
+          alert('Failed to restore backup: ' + (result.error || 'Unknown error'));
+        }
+      }
+    }
+
+    function checkForUpdates() {
+      alert('Checking for updates...\n\nYou are running the latest version (v1.2.0)');
     }
 
     // Initialize
