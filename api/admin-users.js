@@ -49,17 +49,28 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // Fetch users from Supabase
-    const { data: profiles, error } = await supabaseAdmin
+    // Fetch users from Supabase - join auth.users to get email
+    const { data: profiles, error: profilesError } = await supabaseAdmin
       .from('profiles')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      return res.status(500).json({ ok: false, error: error.message });
+    if (profilesError) {
+      return res.status(500).json({ ok: false, error: profilesError.message });
     }
 
-    return res.status(200).json({ ok: true, users: profiles || [] });
+    // Get emails from auth.users for each profile
+    const usersWithEmails = await Promise.all(
+      (profiles || []).map(async (profile) => {
+        const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(profile.user_id);
+        return {
+          ...profile,
+          email: authUser?.user?.email || 'No email'
+        };
+      })
+    );
+
+    return res.status(200).json({ ok: true, users: usersWithEmails || [] });
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
   }
