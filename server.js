@@ -349,20 +349,31 @@ async function handleApiEndpoint(req, res, pathname) {
     }
 
     try {
-      // Fetch users from Supabase
-      const { data: profiles, error } = await supabaseAdmin
+      // Fetch users from Supabase - join auth.users to get email
+      const { data: profiles, error: profilesError } = await supabaseAdmin
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
+      if (profilesError) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ ok: false, error: error.message }));
+        res.end(JSON.stringify({ ok: false, error: profilesError.message }));
         return;
       }
 
+      // Get emails from auth.users for each profile
+      const usersWithEmails = await Promise.all(
+        (profiles || []).map(async (profile) => {
+          const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(profile.user_id);
+          return {
+            ...profile,
+            email: authUser?.user?.email || 'No email'
+          };
+        })
+      );
+
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ ok: true, users: profiles || [] }));
+      res.end(JSON.stringify({ ok: true, users: usersWithEmails || [] }));
     } catch (error) {
       res.writeHead(500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: false, error: error.message }));
@@ -790,6 +801,20 @@ async function handleApiEndpoint(req, res, pathname) {
       const result = await adminSettings.getTemplates();
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(result));
+    } else if (req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', async () => {
+        try {
+          const { name, description, status } = JSON.parse(body);
+          const result = await adminSettings.createTemplate(name, description, status, verifyResult.user.id);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result));
+        } catch (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: false, error: 'Invalid request' }));
+        }
+      });
     } else if (req.method === 'PUT') {
       let body = '';
       req.on('data', chunk => { body += chunk.toString(); });

@@ -224,7 +224,7 @@ async function getAPIKeys() {
     .order('created_at', { ascending: false });
   
   if (error) return { ok: false, error: error.message };
-  return { ok: true, keys: data };
+  return { ok: true, api_keys: data };
 }
 
 async function createAPIKey(name, environment, userId) {
@@ -382,6 +382,22 @@ async function getTemplates() {
   return { ok: true, templates: data };
 }
 
+async function createTemplate(name, description, status, userId) {
+  const { data, error } = await supabaseAdmin
+    .from('templates')
+    .insert({
+      name,
+      description: description || ''
+    })
+    .select();
+  
+  if (error) return { ok: false, error: error.message };
+  
+  await logActivity('info', `Template '${name}' created`, userId);
+  
+  return { ok: true, template: data[0] };
+}
+
 async function updateTemplate(id, updates, userId) {
   const { data, error } = await supabaseAdmin
     .from('templates')
@@ -469,6 +485,7 @@ module.exports = {
   updateWorkspace,
   deleteWorkspace,
   getTemplates,
+  createTemplate,
   updateTemplate,
   deleteTemplate,
   getBackups,

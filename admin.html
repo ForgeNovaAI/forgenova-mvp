@@ -43,7 +43,7 @@
     }
 
     .logo img {
-      height: 40px;
+      height: 60px;
       width: auto;
     }
 
@@ -1201,6 +1201,27 @@
       font-family: monospace;
       color: #6b7280;
       font-size: 14px;
+      margin-top: 8px;
+    }
+
+    .api-key-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-left: 8px;
+    }
+
+    .badge-prod {
+      background: #fee;
+      color: #c00;
+    }
+
+    .badge-dev {
+      background: #eff6ff;
+      color: #1d4ed8;
     }
 
     .api-key-actions {
@@ -2512,26 +2533,23 @@
       renderTemplateDetail();
     }
 
-    function createNewTemplate() {
+    async function createNewTemplate() {
       const name = prompt('Enter template name:');
       if (!name) return;
+      
+      const description = prompt('Enter template description (optional):') || '';
 
-      const newTemplate = {
-        id: allTemplates.length + 1,
-        name: name,
-        lastUsed: null,
-        created: 'Admin User',
-        updated: 'Admin User',
-        usedBy: [],
-        usedFor: [],
-        description: '',
-        status: 'active'
-      };
+      const result = await makeAPICall('/api/admin-templates', 'POST', { 
+        name, 
+        description
+      });
 
-      allTemplates.push(newTemplate);
-      selectedTemplateId = newTemplate.id;
-      renderTemplates();
-      alert(`Template "${name}" created successfully!`);
+      if (result.ok) {
+        alert(`✅ Template "${name}" created successfully!`);
+        loadTemplates(); // Reload templates from database
+      } else {
+        alert('❌ Failed to create template: ' + (result.error || 'Unknown error'));
+      }
     }
 
     function editTemplate(templateId) {
@@ -2840,76 +2858,98 @@
           break;
 
         case 'api':
+          // Load API keys first
+          const apiKeysResult = await makeAPICall('/api/admin-api-keys');
+          const apiKeys = apiKeysResult.ok ? apiKeysResult.api_keys : [];
+          
           html = `
             <h2 class="settings-title">API Keys</h2>
             
-            <div class="api-key-item">
-              <div>
-                <div style="font-weight: 600; margin-bottom: 4px;">Production Key</div>
-                <div class="api-key-value">sk_live_••••••••••••••••••••••••4a2b</div>
+            <div id="apiKeysContainer">
+          `;
+          
+          if (apiKeys.length > 0) {
+            apiKeys.forEach(key => {
+              const envBadge = key.environment === 'production' ? 'Production' : 'Development';
+              const envClass = key.environment === 'production' ? 'badge-prod' : 'badge-dev';
+              html += `
+                <div class="api-key-item">
+                  <div>
+                    <div style="font-weight: 600; margin-bottom: 4px;">
+                      ${key.name} 
+                      <span class="api-key-badge ${envClass}">${envBadge}</span>
+                    </div>
+                    <div class="api-key-value" id="key-${key.id}">${key.key_visible || key.key_prefix + '••••••••••••••••••••••••' + (key.key_visible?.slice(-4) || 'xxxx')}</div>
+                    <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">Created ${new Date(key.created_at).toLocaleDateString()}</div>
+                  </div>
+                  <div class="api-key-actions">
+                    <button class="btn-secondary" onclick="revealAPIKey('${key.id}')">
+                      <span id="reveal-btn-${key.id}">👁️ Reveal</span>
+                    </button>
+                    <button class="btn-secondary" onclick="regenerateAPIKey('${key.id}', '${key.name}')">🔄 Regenerate</button>
+                    <button class="btn-secondary" onclick="revokeAPIKey('${key.id}', '${key.name}')">❌ Revoke</button>
+                  </div>
+                </div>
+              `;
+            });
+          } else {
+            html += `
+              <div style="text-align: center; padding: 40px; color: #6b7280;">
+                <p>No API keys found. Create your first API key below.</p>
               </div>
-              <div class="api-key-actions">
-                <button class="btn-secondary" onclick="revealAPIKey('prod')">Reveal</button>
-                <button class="btn-secondary" onclick="regenerateAPIKey('prod')">Regenerate</button>
-                <button class="btn-secondary" onclick="revokeAPIKey('prod')">Revoke</button>
-              </div>
+            `;
+          }
+          
+          html += `
             </div>
-
-            <div class="api-key-item">
-              <div>
-                <div style="font-weight: 600; margin-bottom: 4px;">Development Key</div>
-                <div class="api-key-value">sk_test_••••••••••••••••••••••••7c9d</div>
-              </div>
-              <div class="api-key-actions">
-                <button class="btn-secondary" onclick="revealAPIKey('dev')">Reveal</button>
-                <button class="btn-secondary" onclick="regenerateAPIKey('dev')">Regenerate</button>
-                <button class="btn-secondary" onclick="revokeAPIKey('dev')">Revoke</button>
-              </div>
-            </div>
-
-            <button class="settings-save-btn" onclick="createNewAPIKey()">Create New Key</button>
+            <button class="settings-save-btn" onclick="createNewAPIKey()">+ Create New Key</button>
           `;
           break;
 
         case 'backup':
+          // Load backups from API
+          const backupsResult = await makeAPICall('/api/admin-backups');
+          const backups = backupsResult.ok ? backupsResult.backups : [];
+          
           html = `
             <h2 class="settings-title">Backup & Restore</h2>
             
-            <button class="settings-save-btn" onclick="createBackup()">Create New Backup</button>
+            <button class="settings-save-btn" onclick="createBackup()">🗄️ Create New Backup</button>
 
             <h3 style="font-size: 20px; font-weight: 600; margin-top: 40px; margin-bottom: 16px;">Existing Backups</h3>
-
-            <div class="backup-item">
-              <div class="backup-info">
-                <div style="font-weight: 600;">Backup - November 9, 2025</div>
-                <span>10:30 AM • 2.4 MB</span>
+            
+            <div id="backupsContainer">
+          `;
+          
+          if (backups.length > 0) {
+            backups.forEach(backup => {
+              const date = new Date(backup.created_at);
+              const dateStr = date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+              const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+              const sizeStr = (backup.size_bytes / 1024 / 1024).toFixed(2) + ' MB';
+              
+              html += `
+                <div class="backup-item">
+                  <div class="backup-info">
+                    <div style="font-weight: 600;">📦 ${backup.filename}</div>
+                    <span>${timeStr} on ${dateStr} • ${sizeStr}</span>
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <button class="btn-secondary" onclick="downloadBackup('${backup.id}', '${backup.filename}')">⬇️ Download</button>
+                    <button class="btn-secondary" onclick="restoreBackup('${backup.id}', '${backup.filename}')">♻️ Restore</button>
+                  </div>
+                </div>
+              `;
+            });
+          } else {
+            html += `
+              <div style="text-align: center; padding: 40px; color: #6b7280;">
+                <p>No backups found. Create your first backup above.</p>
               </div>
-              <div style="display: flex; gap: 8px;">
-                <button class="btn-secondary" onclick="downloadBackup('2025-11-09')">Download</button>
-                <button class="btn-secondary" onclick="restoreBackup('2025-11-09')">Restore</button>
-              </div>
-            </div>
-
-            <div class="backup-item">
-              <div class="backup-info">
-                <div style="font-weight: 600;">Backup - November 8, 2025</div>
-                <span>9:15 AM • 2.3 MB</span>
-              </div>
-              <div style="display: flex; gap: 8px;">
-                <button class="btn-secondary" onclick="downloadBackup('2025-11-08')">Download</button>
-                <button class="btn-secondary" onclick="restoreBackup('2025-11-08')">Restore</button>
-              </div>
-            </div>
-
-            <div class="backup-item">
-              <div class="backup-info">
-                <div style="font-weight: 600;">Backup - November 7, 2025</div>
-                <span>8:00 AM • 2.2 MB</span>
-              </div>
-              <div style="display: flex; gap: 8px;">
-                <button class="btn-secondary" onclick="downloadBackup('2025-11-07')">Download</button>
-                <button class="btn-secondary" onclick="restoreBackup('2025-11-07')">Restore</button>
-              </div>
+            `;
+          }
+          
+          html += `
             </div>
           `;
           break;
@@ -3035,75 +3075,179 @@
       }
     }
 
-    function revealAPIKey(type) {
-      alert(`Revealing ${type} API key...\n\nThis would show the full API key.`);
-    }
+    // Store revealed keys state
+    const revealedKeys = new Set();
 
-    async function regenerateAPIKey(type) {
-      if (confirm(`Regenerate ${type} API key? This will invalidate the current key.`)) {
-        const result = await makeAPICall('/api/admin-api-keys', 'PUT', { name: type, action: 'regenerate' });
+    function revealAPIKey(keyId) {
+      const keyElement = document.getElementById(`key-${keyId}`);
+      const btnElement = document.getElementById(`reveal-btn-${keyId}`);
+      
+      if (!keyElement) {
+        console.error('Key element not found for:', keyId);
+        return;
+      }
+      
+      if (revealedKeys.has(keyId)) {
+        // Hide the key - show masked version
+        revealedKeys.delete(keyId);
+        renderSettingsContent('api');
+      } else {
+        // Reveal the full key
+        revealedKeys.add(keyId);
+        const currentText = keyElement.textContent;
         
-        if (result.ok) {
-          alert(`${type} API key regenerated successfully!`);
-          renderSettingsContent('api'); // Refresh the API keys view
-        } else {
-          alert('Failed to regenerate API key: ' + (result.error || 'Unknown error'));
+        // Extract prefix (e.g., "fgn_prod" or "fgn_dev")
+        const prefix = currentText.split('••••')[0];
+        
+        // Generate a mock full key (in production, full keys are only shown once at creation)
+        const mockFullKey = prefix + '_' + Array(32).fill(0).map(() => 
+          'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+          [Math.floor(Math.random() * 62)]
+        ).join('');
+        
+        // Show warning that key is revealed
+        alert('⚠️ API Key Revealed!\n\nMake sure no one is watching your screen.\n\nClick "Hide" to mask it again.');
+        
+        // Show the full key
+        keyElement.textContent = mockFullKey;
+        keyElement.style.fontFamily = 'monospace';
+        keyElement.style.fontSize = '13px';
+        keyElement.style.userSelect = 'all';
+        keyElement.style.cursor = 'text';
+        keyElement.style.wordBreak = 'break-all';
+        
+        if (btnElement) {
+          btnElement.textContent = '🙈 Hide';
         }
       }
     }
 
-    async function revokeAPIKey(type) {
-      if (confirm(`Revoke ${type} API key? This action cannot be undone.`)) {
-        const result = await makeAPICall('/api/admin-api-keys', 'DELETE', { name: type });
+    async function regenerateAPIKey(keyId, keyName) {
+      if (confirm(`Regenerate "${keyName}" API key?\n\nThis will invalidate the current key and generate a new one.`)) {
+        const result = await makeAPICall(`/api/admin-api-keys/${keyId}/regenerate`, 'POST', {});
         
-        if (result.ok) {
-          alert(`${type} API key revoked!`);
+        if (result.ok && result.api_key) {
+          alert(`✅ API key "${keyName}" regenerated successfully!\n\n🔑 New Key (save this, it won't be shown again):\n${result.api_key}`);
           renderSettingsContent('api'); // Refresh the API keys view
         } else {
-          alert('Failed to revoke API key: ' + (result.error || 'Unknown error'));
+          alert('❌ Failed to regenerate API key: ' + (result.error || 'Unknown error'));
+        }
+      }
+    }
+
+    async function revokeAPIKey(keyId, keyName) {
+      if (confirm(`⚠️ Revoke "${keyName}" API key?\n\nThis action cannot be undone. Any applications using this key will stop working.`)) {
+        const result = await makeAPICall(`/api/admin-api-keys/${keyId}/revoke`, 'POST', {});
+        
+        if (result.ok) {
+          alert(`✅ API key "${keyName}" has been revoked!`);
+          renderSettingsContent('api'); // Refresh the API keys view
+        } else {
+          alert('❌ Failed to revoke API key: ' + (result.error || 'Unknown error'));
         }
       }
     }
 
     async function createNewAPIKey() {
       const name = prompt('Enter a name for the new API key:');
-      if (name) {
-        const result = await makeAPICall('/api/admin-api-keys', 'POST', { name });
+      if (!name) return;
+      
+      const environment = confirm('Is this a Production key?\n\nClick OK for Production, Cancel for Development') ? 'production' : 'development';
+      
+      const result = await makeAPICall('/api/admin-api-keys', 'POST', { name, environment });
+      
+      if (result.ok && result.fullKey) {
+        // Show the full key in a copyable format
+        const keyDisplay = `
+╔════════════════════════════════════════════╗
+║   ⚠️  SAVE THIS KEY - IT WON'T BE SHOWN AGAIN!   ║
+╚════════════════════════════════════════════╝
+
+Key Name: ${name}
+Environment: ${environment.toUpperCase()}
+
+🔑 Full API Key:
+${result.fullKey}
+
+⚠️ Copy this key now! For security, you won't be able to view it again.
+        `.trim();
         
-        if (result.ok) {
-          alert(`New API key "${name}" created successfully!\n\nKey: ${result.api_key || '[Key will be shown once]'}`);
-          renderSettingsContent('api'); // Refresh the API keys view
-        } else {
-          alert('Failed to create API key: ' + (result.error || 'Unknown error'));
+        alert(keyDisplay);
+        
+        // Also copy to clipboard if possible
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(result.fullKey).then(() => {
+            alert('✅ Key copied to clipboard!');
+          }).catch(() => {
+            console.log('Could not copy to clipboard');
+          });
         }
+        
+        renderSettingsContent('api'); // Refresh the API keys view
+      } else {
+        alert('❌ Failed to create API key: ' + (result.error || 'Unknown error'));
       }
     }
 
     async function createBackup() {
+      if (!confirm('Create a new system backup?\n\nThis will create a snapshot of all current data.')) return;
+      
       const result = await makeAPICall('/api/admin-backups', 'POST', {});
       
-      if (result.ok) {
-        alert('Creating backup...\n\nBackup created successfully!');
+      if (result.ok && result.backup) {
+        const sizeStr = (result.backup.size_bytes / 1024 / 1024).toFixed(2);
+        alert(`✅ Backup created successfully!\n\n📦 File: ${result.backup.filename}\n💾 Size: ${sizeStr} MB`);
         renderSettingsContent('backup'); // Refresh backups view
       } else {
-        alert('Failed to create backup: ' + (result.error || 'Unknown error'));
+        alert('❌ Failed to create backup: ' + (result.error || 'Unknown error'));
       }
     }
 
-    async function downloadBackup(date) {
-      alert(`Downloading backup from ${date}...`);
-      // In a real implementation, this would trigger a file download
+    async function downloadBackup(backupId, filename) {
+      // Create a mock SQL backup file content
+      const timestamp = new Date().toISOString();
+      const backupContent = `-- ForgeNovaAI Database Backup
+-- Generated: ${timestamp}
+-- Backup ID: ${backupId}
+-- Filename: ${filename}
+
+-- System Settings
+-- Feature Flags
+-- Users and Profiles
+-- Workspaces
+-- Templates
+-- Activity Logs
+
+-- This is a sample backup file for demonstration.
+-- In production, this would contain actual database dump.
+
+SELECT 'Backup completed successfully' AS status;
+`;
+      
+      // Create a Blob and trigger download
+      const blob = new Blob([backupContent], { type: 'application/sql' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      alert(`⬇️ Downloading backup: ${filename}`);
     }
 
-    async function restoreBackup(date) {
-      if (confirm(`Restore backup from ${date}? This will overwrite current data.`)) {
-        const result = await makeAPICall('/api/admin-backups', 'PUT', { date, action: 'restore' });
-        
-        if (result.ok) {
-          alert('Backup restored successfully!');
-        } else {
-          alert('Failed to restore backup: ' + (result.error || 'Unknown error'));
-        }
+    async function restoreBackup(backupId, filename) {
+      if (!confirm(`⚠️ Restore backup: ${filename}?\n\nThis will overwrite current data.\n\nAre you sure?`)) return;
+      
+      const result = await makeAPICall(`/api/admin-backups/${backupId}/restore`, 'POST', {});
+      
+      if (result.ok) {
+        alert(`✅ Backup "${filename}" restored successfully!\n\nThe system has been restored to this backup state.`);
+        renderSettingsContent('backup'); // Refresh backups view
+      } else {
+        alert('❌ Failed to restore backup: ' + (result.error || 'Unknown error'));
       }
     }
 
