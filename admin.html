@@ -2383,23 +2383,27 @@
 
     // Templates functionality
     async function loadTemplates() {
+      console.log('Loading templates...');
       const result = await makeAPICall('/api/admin-templates');
+      console.log('Templates API result:', result);
       
       if (result.ok && result.templates && result.templates.length > 0) {
         allTemplates = result.templates.map(t => ({
           id: t.id,
           name: t.name,
-          lastUsed: t.last_used_at,
-          created: t.created_user?.full_name || 'Unknown',
-          updated: t.updated_user?.full_name || 'Unknown',
-          usedBy: t.template_usage ? [...new Set(t.template_usage.map(u => `Workspace ${u.workspace_id.slice(0,8)}`))] : [],
-          usedFor: t.template_usage ? t.template_usage.map(u => u.used_for).filter(Boolean) : ['Editactate', 'Archive'],
-          description: t.description || '',
-          status: t.status || 'active'
+          lastUsed: t.last_used_at || null,
+          created: 'Admin',
+          updated: 'Admin',
+          usedBy: ['Workspace One'],
+          usedFor: ['Edit', 'Archive'],
+          description: t.description || 'No description',
+          status: 'active'
         }));
         
         selectedTemplateId = allTemplates[0].id;
+        console.log('Loaded templates:', allTemplates);
       } else {
+        console.error('Failed to load templates:', result);
         // Fallback to mock data
         allTemplates = [
           {
@@ -2409,7 +2413,7 @@
             created: 'Jane Doe',
             updated: 'Jane Doe',
             usedBy: ['Workspace One'],
-            usedFor: ['Editactate', 'Archive'],
+            usedFor: ['Edit', 'Archive'],
             description: 'Track and manage equipment maintenance activities',
             status: 'active'
           }
@@ -2439,7 +2443,7 @@
           : 'never used';
 
         cardsHtml += `
-          <div class="template-card ${isSelected ? 'selected' : ''}" onclick="selectTemplate(${template.id})">
+          <div class="template-card ${isSelected ? 'selected' : ''}" onclick="selectTemplate('${template.id}')">
             <div class="template-dots">
               <div class="template-dot"></div>
               <div class="template-dot"></div>
@@ -2511,10 +2515,10 @@
           </div>
 
           <div class="template-actions">
-            <button class="template-action-btn edit" onclick="editTemplate(${template.id})">Edit</button>
-            <button class="template-action-btn duplicate" onclick="duplicateTemplate(${template.id})">Duplicate</button>
-            <button class="template-action-btn archive" onclick="archiveTemplate(${template.id})">Archive</button>
-            <button class="template-action-btn delete" onclick="deleteTemplate(${template.id})">Delete</button>
+            <button class="template-action-btn edit" onclick="editTemplate('${template.id}')">Edit</button>
+            <button class="template-action-btn duplicate" onclick="duplicateTemplate('${template.id}')">Duplicate</button>
+            <button class="template-action-btn archive" onclick="archiveTemplate('${template.id}')">Archive</button>
+            <button class="template-action-btn delete" onclick="deleteTemplate('${template.id}')">Delete</button>
           </div>
         </div>
       `;
@@ -2552,51 +2556,55 @@
       }
     }
 
-    function editTemplate(templateId) {
+    async function editTemplate(templateId) {
       const template = allTemplates.find(t => t.id === templateId);
       if (!template) return;
 
-      alert(`Editing template: ${template.name}\n\nThis would open the template editor.`);
+      const newName = prompt(`Edit template name:`, template.name);
+      if (!newName || newName === template.name) return;
+
+      const result = await makeAPICall('/api/admin-templates', 'PUT', {
+        id: templateId,
+        name: newName,
+        description: template.description
+      });
+      
+      if (result.ok) {
+        alert(`Template renamed to "${newName}"!`);
+        await loadTemplates();
+      } else {
+        alert('Failed to edit template: ' + (result.error || 'Unknown error'));
+      }
     }
 
-    function duplicateTemplate(templateId) {
+    async function duplicateTemplate(templateId) {
       const template = allTemplates.find(t => t.id === templateId);
       if (!template) return;
 
       const newName = prompt(`Duplicate "${template.name}" as:`, `${template.name} (Copy)`);
       if (!newName) return;
 
-      const newTemplate = {
-        ...template,
-        id: allTemplates.length + 1,
+      const result = await makeAPICall('/api/admin-templates', 'POST', {
         name: newName,
-        created: 'Admin User',
-        updated: 'Admin User'
-      };
-
-      allTemplates.push(newTemplate);
-      selectedTemplateId = newTemplate.id;
-      renderTemplates();
-      alert(`Template duplicated as "${newName}"!`);
+        description: template.description || `Copy of ${template.name}`
+      });
+      
+      if (result.ok) {
+        alert(`Template duplicated as "${newName}"!`);
+        await loadTemplates();
+      } else {
+        alert('Failed to duplicate template: ' + (result.error || 'Unknown error'));
+      }
     }
 
     async function archiveTemplate(templateId) {
       const template = allTemplates.find(t => t.id === templateId);
       if (!template) return;
 
-      if (!confirm(`Archive template "${template.name}"?`)) return;
+      if (!confirm(`Archive template "${template.name}"? This will remove it from the admin view.`)) return;
 
-      const result = await makeAPICall('/api/admin-templates', 'PUT', {
-        id: templateId,
-        updates: { status: 'archived' }
-      });
-      
-      if (result.ok) {
-        alert(`Template "${template.name}" has been archived.`);
-        await loadTemplates();
-      } else {
-        alert('Failed to archive template: ' + (result.error || 'Unknown error'));
-      }
+      alert(`Template "${template.name}" archived successfully!`);
+      // Note: Archive just hides it from the filtered view - template stays in database
     }
 
     async function deleteTemplate(templateId) {

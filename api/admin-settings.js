@@ -368,15 +368,14 @@ async function deleteWorkspace(id, userId) {
 
 // Templates Endpoints
 async function getTemplates() {
+  // Only return the 4 main templates
+  const mainTemplates = ['Maintenance Log', 'Production QC', 'Inventory Count', 'Safety Audit'];
+  
   const { data, error } = await supabaseAdmin
     .from('templates')
-    .select(`
-      *,
-      created_user:profiles!templates_created_by_fkey(full_name, email),
-      updated_user:profiles!templates_updated_by_fkey(full_name, email),
-      template_usage(workspace_id, used_for)
-    `)
-    .order('created_at', { ascending: false });
+    .select('*')
+    .in('name', mainTemplates)
+    .order('name', { ascending: true });
   
   if (error) return { ok: false, error: error.message };
   return { ok: true, templates: data };
@@ -401,10 +400,7 @@ async function createTemplate(name, description, status, userId) {
 async function updateTemplate(id, updates, userId) {
   const { data, error } = await supabaseAdmin
     .from('templates')
-    .update({
-      ...updates,
-      updated_by: userId
-    })
+    .update(updates)
     .eq('id', id)
     .select();
   
