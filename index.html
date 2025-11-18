@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ForgeNovaAI - Build No-Code Factory Apps</title>
-    <!-- Version: 1.0.1 - Fixed switchTab error -->
+    <!-- Version: 1.0.2 - Force Vercel deployment with latest commit -->
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
@@ -1086,9 +1086,9 @@
                 }
 
                 if (data.user) {
-                    // Send admin notification (don't wait for it)
+                    // Send admin notifications (don't wait for it)
                     fetch('/api/admin-notification', {
-                        method: 'POST',
+                        method: 'post',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             type: 'user_signup',
