@@ -871,6 +871,28 @@ async function handleApiEndpoint(req, res, pathname) {
     return;
   }
 
+  // Admin Notification Endpoint (no auth required - called from public signup)
+  if (pathname === '/api/admin-notification') {
+    let body = '';
+    req.on('data', chunk => { body += chunk.toString(); });
+    req.on('end', async () => {
+      try {
+        console.log('📧 Admin notification received, body:', body);
+        const parsedBody = JSON.parse(body);
+        console.log('📧 Parsed body:', parsedBody);
+        // Create a modified request object with parsed body
+        const modifiedReq = { ...req, body: parsedBody };
+        const adminNotification = require('./api/admin-notification');
+        await adminNotification(modifiedReq, res);
+      } catch (error) {
+        console.error('❌ Failed to process notification:', error);
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: error.message }));
+      }
+    });
+    return;
+  }
+
   // Unknown API endpoint
   res.writeHead(404, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ ok: false, error: 'Not found' }));

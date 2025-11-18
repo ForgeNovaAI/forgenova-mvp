@@ -875,7 +875,7 @@
         function switchTab(tab) {
             // Update tab buttons
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+            document.querySelector(`.tab[onclick*="${tab}"]`)?.classList.add('active');
 
             // Update tab content
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -1085,6 +1085,21 @@
                 }
 
                 if (data.user) {
+                    // Send admin notification (don't wait for it)
+                    fetch('/api/admin-notification', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            type: 'user_signup',
+                            userData: {
+                                full_name: `${firstName} ${lastName}`,
+                                email: email,
+                                company: company,
+                                position: position
+                            }
+                        })
+                    }).catch(err => console.log('Notification failed:', err));
+                    
                     if (data.session) {
                         // User is auto-confirmed (email confirmation disabled)
                         showAlert('Account created successfully! Redirecting...', 'success');

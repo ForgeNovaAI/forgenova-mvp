@@ -577,6 +577,21 @@
                 }
 
                 if (data.user) {
+                    // Send admin notification (don't wait for it)
+                    fetch('/api/admin-notification', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            type: 'user_signup',
+                            userData: {
+                                full_name: fullName,
+                                email: email,
+                                company: company,
+                                position: position
+                            }
+                        })
+                    }).catch(err => console.log('Notification failed:', err));
+                    
                     // Check if email confirmation is required
                     if (data.session) {
                         // User is auto-confirmed (email confirmation disabled)
