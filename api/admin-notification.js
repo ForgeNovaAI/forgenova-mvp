@@ -43,7 +43,7 @@ module.exports = async (req, res) => {
     // Send email notification
     const emailData = await resend.emails.send({
       from: 'ForgeNovaAI <info@forgenova.ai>',
-      to: ['forgenovaai@gmail.com'],
+      to: ['info@forgenova.ai'],
       subject: '🎉 New User Signup - ForgeNovaAI',
       html: `
         <!DOCTYPE html>
