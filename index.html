@@ -1158,7 +1158,7 @@
             
             try {
                 const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-                    redirectTo: `${window.location.origin}/workspace.html`
+                    redirectTo: `${window.location.origin}/change-password.html`
                 });
 
                 if (error) throw error;
