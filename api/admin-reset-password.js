@@ -33,8 +33,16 @@ module.exports = async (req, res) => {
       return res.status(404).json({ ok: false, error: 'User not found' });
     }
 
-    // Send password reset email
-    const { error } = await supabaseAdmin.auth.resetPasswordForEmail(authUser.user.email);
+    // Determine the site URL (for Vercel or localhost)
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL 
+      || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://forgenova-mvp.vercel.app');
+    
+    const redirectTo = `${siteUrl}/change-password.html`;
+
+    // Send password reset email with redirect URL
+    const { error } = await supabaseAdmin.auth.resetPasswordForEmail(authUser.user.email, {
+      redirectTo: redirectTo
+    });
 
     if (error) {
       return res.status(500).json({ ok: false, error: error.message });

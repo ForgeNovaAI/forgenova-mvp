@@ -418,8 +418,13 @@ async function handleApiEndpoint(req, res, pathname) {
           return;
         }
 
-        // Send password reset email via Supabase
-        const { error } = await supabaseAdmin.auth.resetPasswordForEmail(profile.email);
+        // Determine redirect URL
+        const redirectTo = `http://localhost:3000/change-password.html`;
+
+        // Send password reset email via Supabase with redirect URL
+        const { error } = await supabaseAdmin.auth.resetPasswordForEmail(profile.email, {
+          redirectTo: redirectTo
+        });
 
         if (error) {
           res.writeHead(500, { 'Content-Type': 'application/json' });

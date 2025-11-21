@@ -3313,13 +3313,10 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('load', renderChartsNow);
 })();
 </script>
-    <!-- Supabase (v2) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Supabase client already loaded at top of file -->
 <script>
-  // 1) Init (use your real values)
-  const SUPABASE_URL = "https://<YOUR-PROJECT-REF>.supabase.co";
-  const SUPABASE_ANON_KEY = "<YOUR-ANON-PUBLIC-KEY>";
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // Use the existing supabaseClient from the top of the file
+  const sb = supabaseClient;
 
   const userInfo = document.getElementById('userInfo');
 
