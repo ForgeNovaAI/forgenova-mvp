@@ -87,7 +87,7 @@ module.exports = async (req, res) => {
                 <span>${new Date().toLocaleString()}</span>
               </div>
               <div style="margin-top: 30px; text-align: center;">
-                <a href="https://forgenova-mvp.vercel.app/admin.html" 
+                <a href="https://mvp.forgenova.ai/admin.html" 
                    style="display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
                   View in Admin Dashboard
                 </a>

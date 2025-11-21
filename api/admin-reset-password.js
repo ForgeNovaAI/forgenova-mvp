@@ -34,8 +34,7 @@ module.exports = async (req, res) => {
     }
 
     // Determine the site URL (for Vercel or localhost)
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL 
-      || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://forgenova-mvp.vercel.app');
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://mvp.forgenova.ai';
     
     const redirectTo = `${siteUrl}/change-password.html`;
 
