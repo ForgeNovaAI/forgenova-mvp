@@ -898,6 +898,13 @@ async function handleApiEndpoint(req, res, pathname) {
     return;
   }
 
+  // Create profile endpoint (for new user signups)
+  if (pathname === '/api/create-profile') {
+    const createProfile = require('./api/create-profile');
+    await createProfile(req, res);
+    return;
+  }
+
   // Unknown API endpoint
   res.writeHead(404, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ ok: false, error: 'Not found' }));
