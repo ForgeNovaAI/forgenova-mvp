@@ -12,12 +12,27 @@
 
   // Create Supabase client
   const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-</script>
+</script> 
 <!-- Auth Helper -->
 <script src="assets/js/auth.js"></script>
 <script>
-  // Initialize avatar display
-  async function initializeAvatar() {
+  // Initialize avatar display with retry logic
+  async function initializeAvatar(retryCount = 0) {
+    const maxRetries = 5;
+    let retryDelay = 1000; // 1 second
+    
+    // Check if user is coming from password reset (longer initial delay)
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromPasswordReset = urlParams.get('from') === 'password-reset' || 
+                              sessionStorage.getItem('fromPasswordReset') === 'true';
+    
+    if (fromPasswordReset && retryCount === 0) {
+      retryDelay = 2000; // Longer delay for password reset
+      console.log('🔐 User coming from password reset, using longer delay');
+      // Clear the flag
+      sessionStorage.removeItem('fromPasswordReset');
+    }
+    
     // Check if user has completed workspace setup
     const workspaceData = localStorage.getItem('workspaceData');
     if (!workspaceData) {
@@ -28,10 +43,28 @@
     
     // Display user info in header
     try {
-      await window.ForgeAuth.displayUserInfo('userInfo');
+      // First check if we have a session
+      const session = await window.ForgeAuth.checkAuthentication();
+      if (!session && retryCount < maxRetries) {
+        console.log(`🔄 Session not ready, retrying in ${retryDelay}ms... (${retryCount + 1}/${maxRetries})`);
+        setTimeout(() => initializeAvatar(retryCount + 1), retryDelay);
+        return;
+      }
+      
+      // Use waitForSession if this is the first attempt or user came from password reset
+      const shouldWaitForSession = retryCount === 0 && fromPasswordReset;
+      await window.ForgeAuth.displayUserInfo('userInfo', shouldWaitForSession);
       console.log('✅ Avatar loaded successfully');
     } catch (e) {
       console.error('❌ Auth display error:', e);
+      
+      // Retry if we haven't exceeded max retries
+      if (retryCount < maxRetries) {
+        console.log(`🔄 Retrying avatar load... (${retryCount + 1}/${maxRetries})`);
+        setTimeout(() => initializeAvatar(retryCount + 1), retryDelay);
+      } else {
+        console.error('❌ Failed to load avatar after maximum retries');
+      }
     }
   }
   
@@ -48,8 +81,9 @@
     // Check if avatar was already loaded
     const avatarBtn = document.getElementById('avatarBtn');
     if (!avatarBtn) {
-      console.log('🔄 Retrying avatar load...');
-      initializeAvatar();
+      console.log('🔄 Window loaded fallback - retrying avatar load...');
+      // Add a small delay to allow any pending session establishment
+      setTimeout(() => initializeAvatar(0), 500);
     }
   });
 

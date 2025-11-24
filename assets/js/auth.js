@@ -38,6 +38,30 @@ async function getCurrentUser() {
 }
 
 /**
+ * Wait for user session to be ready (useful after password reset)
+ * @param {number} maxWaitTime - Maximum time to wait in ms (default 10 seconds)
+ * @param {number} checkInterval - Interval between checks in ms (default 500ms)
+ * @returns {Promise<Object|null>} User object when ready, or null if timeout
+ */
+async function waitForUserSession(maxWaitTime = 10000, checkInterval = 500) {
+    const startTime = Date.now();
+    
+    while (Date.now() - startTime < maxWaitTime) {
+        const user = await getCurrentUser();
+        if (user) {
+            console.log('✅ User session ready');
+            return user;
+        }
+        
+        console.log('⏳ Waiting for user session...');
+        await new Promise(resolve => setTimeout(resolve, checkInterval));
+    }
+    
+    console.warn('⚠️ User session timeout after', maxWaitTime, 'ms');
+    return null;
+}
+
+/**
  * Protect a route - redirect to login if not authenticated
  * Call this on protected pages (like dashboard)
  */
@@ -112,9 +136,17 @@ function onAuthStateChange(callback) {
 /**
  * Display user info as a clickable avatar with dropdown
  * @param {string} elementId - ID of element to display user info
+ * @param {boolean} waitForSession - Whether to wait for session if not immediately available
  */
-async function displayUserInfo(elementId = 'userInfo') {
-    const user = await getCurrentUser();
+async function displayUserInfo(elementId = 'userInfo', waitForSession = false) {
+    let user = await getCurrentUser();
+    
+    // If no user and waitForSession is true, wait for session to be ready
+    if (!user && waitForSession) {
+        console.log('🔄 User not immediately available, waiting for session...');
+        user = await waitForUserSession();
+    }
+    
     const element = document.getElementById(elementId);
     
     if (!element) {
@@ -124,7 +156,7 @@ async function displayUserInfo(elementId = 'userInfo') {
     
     if (!user) {
         console.error('❌ No user authenticated');
-        return;
+        throw new Error('User not authenticated');
     }
     
     console.log('✅ Displaying avatar for:', user.email);
@@ -360,6 +392,7 @@ async function displayUserInfo(elementId = 'userInfo') {
 window.ForgeAuth = {
     checkAuthentication,
     getCurrentUser,
+    waitForUserSession,
     requireAuth,
     redirectIfAuthenticated,
     signOut,
